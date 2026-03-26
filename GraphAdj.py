@@ -92,7 +92,7 @@ class GraphAdj:
         # add two vertexes in both dicts, resize numpy
         if (vertex) in self.VertexToIndex:
            print(f"Vertex {vertex} already in set")
-           return false     
+           return False     
         # probably should insert at last pos 
         lastIndex = len(self.VertexToIndex)
         self.IndexToVertex[lastIndex] = vertex
@@ -115,7 +115,8 @@ class GraphAdj:
         # modify in place
         self.adjMatrix = np.delete(self.adjMatrix, pos, 0)  # delete third row of B
         self.adjMatrix = np.delete(self.adjMatrix, pos, 1)  # delete third row of B
-        # drop the dict keys
+        # drop the dict keys, then reindex
+        
         del self.VertexToIndex[vertex]
         del self.IndexToVertex[pos]
         
@@ -126,11 +127,11 @@ class GraphAdj:
         """
         # Check whether this is a tuple
         if type(edge) is tuple:
-           a, b = edge
-           c, d = self.VertexToIndex[a], self.VertexToIndex[b]
            # the above should be its own method for clarity but this will do
+           a, b = edge
            if a not in self.VertexToIndex or b not in self.VertexToIndex:
               raise KeyError(f"{a} or {b} is not in the list of vertexes")
+           c, d = self.VertexToIndex[a], self.VertexToIndex[b]
            self.adjMatrix[c, d] += 1
            if not self.directed:
               self.adjMatrix[d, c] += 1
@@ -150,7 +151,7 @@ class GraphAdj:
            self.adjMatrix[c, d] -= 1
            if not self.directed:
               self.adjMatrix[d, c] -= 1
-           else:
+        else:
               raise KeyError(f"Edge {edge} doesn't exist.")
         
        
@@ -161,9 +162,11 @@ class GraphAdj:
         """
         # Slight error checking before an expensive $$$ operation
         a, b = edge
-        c, d = self.VertexToIndex[a], self.VertexToIndex[b]
         if a not in self.VertexToIndex or b not in self.VertexToIndex:
             raise KeyError(f"{a} or {b} is not in the list of vertexes")
+        c, d = self.VertexToIndex[a], self.VertexToIndex[b]
+        
+        # ^ this appears in code 3 or four times... maybe create a private method?
         temp = np.linalg.matrix_power(self.adjMatrix, n);
         # lookup
         # this could be better if it used the string builder method
@@ -219,8 +222,8 @@ class GraphAdj:
 
 
     @classmethod
-    def from_graph6(self):
-        """ Alternative constructor for reading graph6."""
+    def from_graph6(self, text: str, path=""):
+        """ Read graph6. Yes it imports a whole file to memory."""
         return NotImplemented
      
 
@@ -266,8 +269,8 @@ print(newGraph)
 
 M = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Lecture", directed=False)        
 print(M)
-assert(M.count_nCycles(('a', 'c'), 2) == 2, "Should be 2")
-assert(M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5")
+assert M.count_nCycles(('a', 'c'), 2) == 2, "Should be 2"
+assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
 
 #newGraph.add_edge(("z", "y")) #errors out on purpose
 #newGraph.remove_edge(("a", "b"))
