@@ -157,6 +157,37 @@ class GraphAdj:
         return temp[c, d]
 
 
+    def to_Graph(self):
+        """
+        Either print out an adjecency matrix or create a new graph. 
+        """
+        # return a class by just calling the GraphAdj()
+        # constructor (via a factory method)
+        # this way we are keeping the classes isolated (parser for Graph
+        # Adj is elsewhere as it should)
+        return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex)
+        
+     @classmethod
+     def from_Graph(cls, matrix, itv):
+     """ Creates an adjacency list based on the numpy array
+     and the ITV matrix. 
+     """
+         return NotImplemented
+
+
+     def to_graph6(self, path=""):
+         """ If path is none returns a string, or writes to file
+         the graph in graph6 format""".
+
+         return NotImplemented
+
+
+     @classmethod
+     def from_graph6(self):
+     """ Alternative constructor for reading graph6."""
+         return NotImplemented
+      
+
 # Directed tests
 newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
 print(newGraph)
