@@ -70,7 +70,7 @@ class Graph:
            if self.directed:
               # unfortunately we have to traverse the entire list to check
               # for references
-              #t1 = time.perf_counter_ns()
+              t1 = time.perf_counter_ns()
               # a simple loop takes only 3-5us - list comp about 5-7 us
               for key in self.adjList:
                   for v in self.adjList[key]:
@@ -78,8 +78,8 @@ class Graph:
                           self.adjList[key].remove(v)
                   #self.adjList[key] = [v for v in self.adjList[key] if v != vertex]
                   #print(temp)
-              #t2 = time.perf_counter_ns()
-              #print(f"time:", t2 - t1)
+              t2 = time.perf_counter_ns()
+              print(f"time:", t2 - t1)
                       
               del self.adjList[vertex]
            else:
@@ -130,26 +130,26 @@ class Graph:
         # Adj is elsewhere as it should)
         return GraphAdj.from_Graph(self.adjList)
         
-     @classmethod
-     def from_GraphAdj(cls, matrix, itv):
-     """ Creates an adjacency list based on the numpy array
-     and the ITV matrix. 
-     """
-         return NotImplemented
+    @classmethod
+    def from_GraphAdj(cls, matrix, itv):
+    """ Creates an adjacency list based on the numpy array
+    and the ITV matrix. 
+    """
+        return NotImplemented
 
 
-     def to_graph6(self, path=""):
-         """ If path is none returns a string, or writes to file
-         the graph in graph6 format""".
+    def to_graph6(self, path=""):
+        """ If path is none returns a string, or writes to file
+        the graph in graph6 format"""
 
-         return NotImplemented
+        return NotImplemented
 
 
-     @classmethod
-     def from_graph6(self):
-     """ Alternative constructor for reading graph6."""
-         return NotImplemented
-      
+    @classmethod
+    def from_graph6(self):
+        """ Alternative constructor for reading graph6."""
+        return NotImplemented
+     
 
     
 
