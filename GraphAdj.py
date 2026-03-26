@@ -9,7 +9,8 @@ class GraphAdj:
     """
 
     
-    def __init__(self, vertex: set, edges: list, name = "Unnamed", directed = True):
+    def __init__(self, vertex: set, edges: list, name = "Unnamed", directed = True, 
+                 array = None, ):
         """
         Uses tuples by default because the graph isn't the same after it's modified,
         therefore it makes sense to make edges a list of tuples
@@ -167,12 +168,31 @@ class GraphAdj:
         # Adj is elsewhere as it should)
         return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex)
         
-     @classmethod
-     def from_Graph(cls, matrix, itv):
-     """ Creates an adjacency list based on the numpy array
-     and the ITV matrix. 
-     """
-         return NotImplemented
+    @classmethod
+    def from_Graph(cls, adjList: dict):
+        """ 
+        Creates an adjacency matrix based on the adjacency list.
+        O(V^2)
+        """
+        # create an empty matrix of ints
+        a = len(adjList)
+        adjMatrix = np.zeros((a, a), dtype=np.int_)
+        # sort then assign itv and vti
+        retrieve = adjList.keys()
+        itv = {}
+        vti = {}
+        # NOW we can bot
+        for index, key in enumerate(retrieve):
+            vti[key] = index;
+            itv[index] = key;
+        print(f"vti {vti}, itv {itv}")
+            
+                  
+             
+             
+             
+             
+         
 
 
      def to_graph6(self, path=""):
