@@ -9,42 +9,65 @@ class GraphAdj:
     """
 
     
-    def __init__(self, vertex: set, edges: list, name = "Unnamed", directed = True, 
-                 array = None, ):
+    def __init__(self, vertex: set = None, edges: list = None, name = "Unnamed", directed = True, 
+                 array = None, vti = None, itv = None):
         """
         Uses tuples by default because the graph isn't the same after it's modified,
         therefore it makes sense to make edges a list of tuples
-        1. Sort because 
+
+        WAYS OF ENTRY:
+        1) Edge list constructor
+        2) "Back entry" through the factory method (array)
+        
+        1)
+        1. Sort the set (remains of the edge list graph) 
         2. Append numbers to vertex 
         # {a, c, 1, c, ...} --> {0: a, 1: c, } etc 
+        TODO: BENCHMARK THIS
         # IndexToVertex === ITV
         # VertexToIndex === VTI
+        3. Create matrix
+       
         
         """
         # set basic params
         self.directed = directed
         self.name = name
+        
+        if array is None:
+            # sort set
+            # assumes only strings for now
+            templist = sorted(vertex)
+             
+            # technically those two should be linked somehow but they arent
+            # THIS SHOULD BE A SEPARATE CLASS!!! CAN AND WILL GET DESYNCED
+            self.IndexToVertex = {}
+            self.VertexToIndex = {}
+            for index, key in enumerate(templist):
+                self.IndexToVertex[index] = key
+                self.VertexToIndex[key] = index
 
-        # sort set
-        # assumes only strings for now
-        templist = sorted(vertex)
-         
-        # technically those two should be linked somehow but they arent
-        # THIS SHOULD BE A SEPARATE CLASS!!! CAN AND WILL GET DESYNCED
-        self.IndexToVertex = dict(enumerate(templist))
-        self.VertexToIndex = {v: k for k, v in self.IndexToVertex.items()}
-        # create a numpy array of the size dict
-        a = len(self.VertexToIndex)
-        self.adjMatrix = np.zeros((a, a), dtype=np.int_)
-        # convert each edge to adjacency matrix
-        for u, v in edges:
-            try:
-                self.adjMatrix[self.VertexToIndex[u], self.VertexToIndex[v]] += 1
-                if not self.directed and (u != v):
-                    # avoids loop duplication 
-                    self.adjMatrix[self.VertexToIndex[v], self.VertexToIndex[u]] += 1
-            except KeyError:
-                print(f"Vertex {u} or {v} is missing from set, skipping")
+            # Deprecated
+            #self.IndexToVertex = dict(enumerate(templist))
+            #self.VertexToIndex = {v: k for k, v in self.IndexToVertex.items()}
+            # create a numpy array of the size dict
+            a = len(self.VertexToIndex)
+            self.adjMatrix = np.zeros((a, a), dtype=np.int_)
+            # convert each edge to adjacency matrix
+            for u, v in edges:
+                try:
+                    self.adjMatrix[self.VertexToIndex[u], self.VertexToIndex[v]] += 1
+                    if not self.directed and (u != v):
+                        # avoids loop duplication 
+                        self.adjMatrix[self.VertexToIndex[v], self.VertexToIndex[u]] += 1
+                except KeyError:
+                    print(f"Vertex {u} or {v} is missing from set, skipping")
+        else: 
+            self.adjMatrix = array
+            self.VertexToIndex = vti
+            self.IndexToVertex = itv
+           
+
  
     def __str__(self):
         # Todo: 
@@ -132,14 +155,6 @@ class GraphAdj:
         
        
 
-    def to_list(self):
-        """
-        Construct a list based on edges list. O(V^2). 
-        """
-        raise NotImplemented
-        
-
-
     def count_nCycles(self, edge:tuple, n:int) -> int:
         """
         Count Cycles in a graph. Does matrix multiplication M^num.
@@ -160,7 +175,8 @@ class GraphAdj:
 
     def to_Graph(self):
         """
-        Either print out an adjecency matrix or create a new graph. 
+        Creates a new list Graph based on the current Matrix.
+        O(V^2)
         """
         # return a class by just calling the GraphAdj()
         # constructor (via a factory method)
@@ -181,32 +197,32 @@ class GraphAdj:
         retrieve = adjList.keys()
         itv = {}
         vti = {}
-        # NOW we can bot
+        # This is faster by around 1/16 s for 1000 iteration
+        # than the initial initialization method!
         for index, key in enumerate(retrieve):
-            vti[key] = index;
-            itv[index] = key;
+            vti[key] = index
+            itv[index] = key
+            # populate each row if nonempty
+            for vertex in adjList[key]:
+                adjMatrix[index, vertex] += 1
+
         print(f"vti {vti}, itv {itv}")
-            
-                  
-             
-             
-             
-             
+        return cls(array=adjMatrix, itv=itv, vti=vti)
+        
          
 
+    def to_graph6(self, path=""):
+        """ If path is none returns a string, or writes to file
+        the graph in graph6 format"""
 
-     def to_graph6(self, path=""):
-         """ If path is none returns a string, or writes to file
-         the graph in graph6 format""".
-
-         return NotImplemented
+        return NotImplemented
 
 
-     @classmethod
-     def from_graph6(self):
-     """ Alternative constructor for reading graph6."""
-         return NotImplemented
-      
+    @classmethod
+    def from_graph6(self):
+        """ Alternative constructor for reading graph6."""
+        return NotImplemented
+     
 
 # Directed tests
 newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
