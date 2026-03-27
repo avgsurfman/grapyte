@@ -209,13 +209,14 @@ class GraphAdj:
             vti[key] = index
             itv[index] = key
                    
-        print(f"vti {vti}, itv {itv}")
+        #print(f"vti {vti}, itv {itv}")
         
         for key in retrieve:
-            for val in adjMatrix[key]:
+            for val in adjList[key]:
+                #print(vti[key], vti[val])
                 adjMatrix[vti[key], vti[val]] += 1
 
-        print(adjMatrix)
+        #print(adjMatrix)
         return cls(array=adjMatrix, itv=itv, vti=vti)
         
 
