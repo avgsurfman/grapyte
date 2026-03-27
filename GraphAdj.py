@@ -190,7 +190,7 @@ class GraphAdj:
         
 
     @classmethod
-    def from_Graph(cls, adjList: dict):
+    def from_Graph(cls, adjList: dict, name: str = ""):
         """ 
         Creates an adjacency matrix based on the adjacency list.
         O(V^2)

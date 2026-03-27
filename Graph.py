@@ -44,8 +44,8 @@ class Graph:
         print(self.adjList)
  
     def __str__(self):
-        return f"Multigraph {self.name} with the following params:\n \
-               Vertex: {self.vertex}, Adjacency list: {self.adjList}"
+        return f"Multigraph {self.name} with the following params:\nVertex:\
+{self.vertex}, Adjacency list: {self.adjList}"
 
     def add_vertex(self, vertex: str):
         """
@@ -128,7 +128,7 @@ class Graph:
         # constructor (via a factory method)
         # this way we are keeping the classes isolated (parser for Graph
         # Adj is elsewhere as it should)
-        return GraphAdj.from_Graph(self.adjList)
+        return GraphAdj.from_Graph(self.adjList, self.name)
         
     @classmethod
     def from_GraphAdj(cls, matrix, itv):
