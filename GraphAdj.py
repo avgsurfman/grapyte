@@ -1,4 +1,5 @@
 # required dep
+import io
 import numpy as np
 
 class GraphAdj:
@@ -187,6 +188,7 @@ class GraphAdj:
         # Adj is elsewhere as it should)
         return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex)
         
+
     @classmethod
     def from_Graph(cls, adjList: dict):
         """ 
@@ -197,35 +199,121 @@ class GraphAdj:
         a = len(adjList)
         adjMatrix = np.zeros((a, a), dtype=np.int_)
         # sort then assign itv and vti
-        retrieve = adjList.keys()
+        retrieve = sorted(adjList.keys())
         itv = {}
         vti = {}
         # This is faster by around 1/16 s for 1000 iteration
         # than the initial initialization method!
         for index, key in enumerate(retrieve):
+            # populate each row 
             vti[key] = index
             itv[index] = key
-            # populate each row if nonempty
-            for vertex in adjList[key]:
-                adjMatrix[index, vertex] += 1
-
+                   
         print(f"vti {vti}, itv {itv}")
+        
+        for key in retrieve:
+            for val in adjMatrix[key]:
+                adjMatrix[vti[key], vti[val]] += 1
+
+        print(adjMatrix)
         return cls(array=adjMatrix, itv=itv, vti=vti)
         
-         
 
     def to_graph6(self, path=""):
         """ If path is none returns a string, or writes to file
-        the graph in graph6 format"""
+        the graph in EITHER g6 or d6 format based on whether the graph is
+        directed or not."""
+        if self.directed:
+            res = self.__to_d6()
+        else:
+            res = self.__to_g6()
+        
+        return res
 
-        return NotImplemented
 
 
     @classmethod
-    def from_graph6(self, text: str, path=""):
-        """ Read graph6. Yes it imports a whole file to memory."""
-        return NotImplemented
+    def from_graph6(self, text: str = None, path=""):
+        """ Read (di)graph6. Yes it imports a whole file to memory."""
+        if path:
+            # read from file
+            raise NotImplementedError
+        elif text is not None:
+            # TODO: strip header
+            # if data.startswith(">>graph6<<")
+            # read from a string
+            tempbuf = []
+            with io.StringIO(text) as f:
+                for line in f:
+                    continue
+            
+        else:
+            return NotImplemented
      
+
+    @classmethod
+    def from_digraph6(self, text: str = None, path=""):
+        """ Read (di)graph6. Yes it imports a whole file to memory."""
+        if path:
+            # read from file
+            raise NotImplementedError
+        elif text is not None:
+            # read from a string
+            with io.StringIO(text) as f:
+                first = f.readline()
+                for line in f:
+                    continue
+                # decode values
+        else:
+            raise NotImplemented
+
+
+    """
+    Are you looking at my privates or are you just happy to see me?
+    """
+    def __to_g6(self, path=""):
+        """ Invoked when graph is undirected."""
+        # we are using array's size just in case the helper
+        # dicts go wrong
+        size = self.adjMatrix.shape(0)
+        #for i in range(size):
+        #        
+        #return res
+
+
+    def __to_d6(self, path=""):
+        """ Invoked when graph is undirected."""
+        return NotImplemented
+
+
+    @staticmethod
+    def __n_decode(n: int) -> int:
+        """
+        Helper private static method to help with n decoding.
+        """
+        if (n <= 125 and n >= 0):
+            return n-63;
+        elif ( n <= 258047):
+            raise NotImplementedError("No way I'm implementing this")
+        elif ( n <= 68719476735):
+            raise NotImplementedError("No way I'm implementing this")
+        else:
+            raise ValueError("Invalid n value")
+     
+    @staticmethod
+    def __n_encode(n: int) -> int:
+        """
+        Helper private static method to help with n encoding.
+        """
+        if (n <= 62 and n >= 0):
+            return n+63;
+        elif ( n <= 258047):
+            raise NotImplementedError("No way I'm implementing this")
+        elif ( n <= 68719476735):
+            raise NotImplementedError("No way I'm implementing this")
+        else:
+            raise ValueError("Invalid n value")
+
 
 # Directed tests
 newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
@@ -272,6 +360,9 @@ print(M)
 assert M.count_nCycles(('a', 'c'), 2) == 2, "Should be 2"
 assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
 
+List = Graph({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Conversion test")
+print(List)
+print(List.to_GraphAdj())
 #newGraph.add_edge(("z", "y")) #errors out on purpose
 #newGraph.remove_edge(("a", "b"))
 #print(newGraph)

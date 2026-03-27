@@ -132,9 +132,9 @@ class Graph:
         
     @classmethod
     def from_GraphAdj(cls, matrix, itv):
-    """ Creates an adjacency list based on the numpy array
-    and the ITV matrix. 
-    """
+        """ Creates an adjacency list based on the numpy array
+        and the ITV matrix. 
+        """
         return NotImplemented
 
 
@@ -155,15 +155,15 @@ class Graph:
 
 
 # directed
-newGraph = Graph({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
-print(newGraph)
-newGraph.add_vertex("z")
-print(newGraph)
-newGraph.add_edge(("b", "z"))
-print(newGraph)
-#newGraph.add_edge(("z", "y")) #errors out on purpose
-newGraph.remove_edge(("a", "b"))
-print(newGraph)
-newGraph.remove_vertex("b")
-# newGraph.remove_vertex("p") # key not in set
-print(newGraph)
+#newGraph = Graph({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
+#print(newGraph)
+#newGraph.add_vertex("z")
+#print(newGraph)
+#newGraph.add_edge(("b", "z"))
+#print(newGraph)
+##newGraph.add_edge(("z", "y")) #errors out on purpose
+#newGraph.remove_edge(("a", "b"))
+#print(newGraph)
+#newGraph.remove_vertex("b")
+## newGraph.remove_vertex("p") # key not in set
+#print(newGraph)
