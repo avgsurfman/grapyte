@@ -71,7 +71,6 @@ class GraphAdj:
 
  
     def __str__(self):
-        # Todo: 
         rtrnString = f"{'Directed' if self.directed else 'Undirected'}\
  Matrix Multigraph {self.name} with the following params:\
 \nVertex: {self.IndexToVertex}\nMatrix: \n"
@@ -80,7 +79,7 @@ class GraphAdj:
         rtrnString += '\n'
         for row_label, row in zip(self.VertexToIndex.keys(), self.adjMatrix):
             rtrnString += '%s [%s]\n' % (row_label, ' '.join('%03s' % i for i in row))
-        # this is probably why java has a string builder class for it (no wonder)
+        # this is probably why java has a string builder class (no wonder)
         return rtrnString
 
     def add_vertex(self, vertex: str):
@@ -103,7 +102,7 @@ class GraphAdj:
         # entries are sorted
         
         # (add in lexical order)
-        #self.adjMatrix =
+
 
     def remove_vertex(self, vertex: str):
         """
@@ -115,7 +114,7 @@ class GraphAdj:
         pos = self.VertexToIndex[vertex]
         # modify in place
         self.adjMatrix = np.delete(self.adjMatrix, pos, 0)  # delete third row of B
-        self.adjMatrix = np.delete(self.adjMatrix, pos, 1)  # delete third row of B
+        self.adjMatrix = np.delete(self.adjMatrix, pos, 1)  # delete third col of B
         # drop the dict keys, then reindex
         
         del self.VertexToIndex[vertex]
@@ -128,7 +127,7 @@ class GraphAdj:
         """
         # Check whether this is a tuple
         if type(edge) is tuple:
-           # the above should be its own method for clarity but this will do
+           # the above should have own method for clarity but this will do
            a, b = edge
            if a not in self.VertexToIndex or b not in self.VertexToIndex:
               raise KeyError(f"{a} or {b} is not in the list of vertexes")
@@ -167,14 +166,29 @@ class GraphAdj:
             raise KeyError(f"{a} or {b} is not in the list of vertexes")
         c, d = self.VertexToIndex[a], self.VertexToIndex[b]
         
-        # ^ this appears in code 3 or four times... maybe create a private method?
+        # ^ this abcd appears in code 3 or four times... 
+        # maybe create a private method?
         temp = np.linalg.matrix_power(self.adjMatrix, n);
-        # lookup
-        # this could be better if it used the string builder method
-        # via an argument but again
-        # this will do
         #print(temp)
         return temp[c, d]
+
+    
+    def get_deg(vertex: str)-> int:
+        """
+        Gets the degree of a vertex.
+        """
+        return NotImplemented
+
+
+
+    def get_Annihilation(vertex: str)-> int:
+        """
+        Gets the annihilation number of a vertex.
+        Uses get_deg.
+        """
+
+        return NotImplemented
+
 
 
     def to_Graph(self):
@@ -185,7 +199,7 @@ class GraphAdj:
         # return a class by just calling the GraphAdj()
         # constructor (via a factory method)
         # this way we are keeping the classes isolated (parser for Graph
-        # Adj is elsewhere as it should)
+        # Adj is defined in the Graph (Adjecency) class as it should be)
         return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex)
         
 
@@ -215,7 +229,7 @@ class GraphAdj:
             for val in adjList[key]:
                 #print(vti[key], vti[val])
                 adjMatrix[vti[key], vti[val]] += 1
-
+        #TODO: replace with logging module
         #print(adjMatrix)
         return cls(array=adjMatrix, itv=itv, vti=vti)
         
@@ -235,36 +249,69 @@ class GraphAdj:
 
     @classmethod
     def from_graph6(self, text: str = None, path=""):
-        """ Read (di)graph6. Yes it imports a whole file to memory."""
+        """ 
+            Read graph6. 
+            Yes, it imports a whole file to memory.
+        """
         if path:
             # read from file
             raise NotImplementedError
-        elif text is not None:
+        elif text:
             # TODO: strip header
             # if data.startswith(">>graph6<<")
-            # read from a string
-            tempbuf = []
-            with io.StringIO(text) as f:
-                for line in f:
-                    continue
-            
+            # read from a string with string buffer
+            arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
+            # if the first sign ISN'T 38 '&' -> d6
+            first = arr[0]
+            if first < 63:
+               raise ValueError(f"Unknown format. {c} is smaller than 63, aborting...")
+            elif first > 125:
+               raise NotImplementedError("No way I'm implementing this...") 
+            else:
+                arr = arr - 63
+                # N(n)
+                a = arr[0]
+                retArrd = np.zeros((a, a), dtype=np.int_)
+                # R(x)
+                # FUN FACT OF THE DAY!
+                # Did you know that the graph6 spec is outright wrong?
+                # The spec says to consider the upper triangle, while
+                # LITERALLY listing the lower triangle in an example
+                # and in an incomprehensible notation at that!
+                # See more: 
+                # https://stackoverflow.com/questions/44532492/how-does-graph6-format-work
+                for idx, char in enumerate(arr):
+                    char = np.binary_repr(char)
+                     
+                     
+                    
+
+                print(retArrd)
+                # assign a default dict
+                vti = {}
+                itv = {}
+                for i in range(a):
+                    vti[a] = a;
+                    itv[a] = a;
+            return cls(array=retArrd, itv=itv, vti=vti)
         else:
             return NotImplemented
      
 
     @classmethod
     def from_digraph6(self, text: str = None, path=""):
-        """ Read (di)graph6. Yes it imports a whole file to memory."""
+        """ 
+            Read digraph6. Yes it also imports a whole file to memory.
+        """
         if path:
             # read from file
             raise NotImplementedError
         elif text is not None:
-            # read from a string
-            with io.StringIO(text) as f:
-                first = f.readline()
-                for line in f:
-                    continue
-                # decode values
+            arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
+            # if the first sign ISN'T 38 '&' -> throw an error
+            first = arr[0]
+            if (first != 38):
+                raise ValueError("Not a proper D6 graph, & missing...")
         else:
             raise NotImplemented
 
@@ -277,8 +324,8 @@ class GraphAdj:
         # we are using array's size just in case the helper
         # dicts go wrong
         size = self.adjMatrix.shape(0)
-        #for i in range(size):
-        #        
+        for i in range(size):
+            continue
         #return res
 
 
@@ -292,7 +339,7 @@ class GraphAdj:
         """
         Helper private static method to help with n decoding.
         """
-        if (n <= 125 and n >= 0):
+        if (n <= 125 and n >= 63):
             return n-63;
         elif ( n <= 258047):
             raise NotImplementedError("No way I'm implementing this")
@@ -361,12 +408,19 @@ print(M)
 assert M.count_nCycles(('a', 'c'), 2) == 2, "Should be 2"
 assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
 
-List = Graph({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Conversion test")
-print(List)
-print(List.to_GraphAdj())
+
+# List test
+#List = Graph({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Conversion test")
+#print(List)
+#print(List.to_GraphAdj())
+
 #newGraph.add_edge(("z", "y")) #errors out on purpose
 #newGraph.remove_edge(("a", "b"))
 #print(newGraph)
 #newGraph.remove_vertex("b")
 # newGraph.remove_vertex("p") # key not in set
 # print(newGraph)
+
+
+# GRAPH6 TEST
+graph6 = GraphAdj.from_graph6("DQc")
