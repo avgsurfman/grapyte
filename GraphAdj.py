@@ -18,7 +18,7 @@ class GraphAdj:
 
         WAYS OF ENTRY:
         1) Edge list constructor
-        2) "Back entry" through the factory method (array)
+        2) "Back entry" through the factory method (fromGraph, from_graph6)
         
         1)
         1. Sort the set (remains of the edge list graph) 
@@ -248,7 +248,7 @@ class GraphAdj:
 
 
     @classmethod
-    def from_graph6(self, text: str = None, path=""):
+    def from_graph6(cls, text: str = None, path=""):
         """ 
             Read graph6. 
             Yes, it imports a whole file to memory.
@@ -270,8 +270,9 @@ class GraphAdj:
             else:
                 arr = arr - 63
                 # N(n)
-                a = arr[0]
-                retArrd = np.zeros((a, a), dtype=np.int_)
+                n = arr[0]
+                retArrd = np.zeros((n, n), dtype=np.int_)
+                
                 # R(x)
                 # FUN FACT OF THE DAY!
                 # Did you know that the graph6 spec is outright wrong?
@@ -280,19 +281,31 @@ class GraphAdj:
                 # and in an incomprehensible notation at that!
                 # See more: 
                 # https://stackoverflow.com/questions/44532492/how-does-graph6-format-work
-                for idx, char in enumerate(arr):
-                    char = np.binary_repr(char)
-                     
-                     
-                    
+                bits = np.unpackbits(arr[1:], bitorder='big') 
+                print(bits)                
+
+                
+                # skip two first bits
+                idx = 2
+                for i in range(1, n):
+                    # skip every 2 characters in front for every 6 characters read
+                    for j in range(i):
+                        #print((j, i), idx, bits[idx]) #UNCOMMENT FOR SPEC ORDER
+                        retArrd[i, j] = bits[idx]
+                        retArrd[j, i] = bits[idx]
+                        idx += 1 
+                        if (idx % 8 == 0):
+                            #print("skipping pos", idx)
+                            idx += 2
+                            
 
                 print(retArrd)
                 # assign a default dict
                 vti = {}
                 itv = {}
-                for i in range(a):
-                    vti[a] = a;
-                    itv[a] = a;
+                for i in range(n):
+                    vti[i] = i;
+                    itv[i] = i;
             return cls(array=retArrd, itv=itv, vti=vti)
         else:
             return NotImplemented
