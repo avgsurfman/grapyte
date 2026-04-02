@@ -264,9 +264,9 @@ class GraphAdj:
             # if the first sign ISN'T 38 '&' -> d6
             first = arr[0]
             if first < 63:
-               raise ValueError(f"Unknown format. {c} is smaller than 63, aborting...")
+                raise ValueError(f"Wrong format: char[0]={c} is smaller than 63, aborting...")
             elif first > 125:
-               raise NotImplementedError("No way I'm implementing this...") 
+                raise NotImplementedError("No way I'm implementing this...") 
             else:
                 arr = arr - 63
                 # N(n)
@@ -282,9 +282,6 @@ class GraphAdj:
                 # See more: 
                 # https://stackoverflow.com/questions/44532492/how-does-graph6-format-work
                 bits = np.unpackbits(arr[1:], bitorder='big') 
-                print(bits)                
-
-                
                 # skip two first bits
                 idx = 2
                 for i in range(1, n):
@@ -298,21 +295,19 @@ class GraphAdj:
                             #print("skipping pos", idx)
                             idx += 2
                             
-
-                print(retArrd)
                 # assign a default dict
                 vti = {}
                 itv = {}
                 for i in range(n):
-                    vti[i] = i;
-                    itv[i] = i;
-            return cls(array=retArrd, itv=itv, vti=vti)
+                    vti[str(i)] = i;
+                    itv[i] = str(i);
+            return cls(array=retArrd, itv=itv, vti=vti, directed=False)
         else:
             return NotImplemented
      
 
     @classmethod
-    def from_digraph6(self, text: str = None, path=""):
+    def from_digraph6(cls, text: str = None, path=""):
         """ 
             Read digraph6. Yes it also imports a whole file to memory.
         """
@@ -323,8 +318,42 @@ class GraphAdj:
             arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
             # if the first sign ISN'T 38 '&' -> throw an error
             first = arr[0]
+            second = arr[1]
             if (first != 38):
                 raise ValueError("Not a proper D6 graph, & missing...")
+            if second < 63:
+                raise ValueError(f"Unknown format. {c} is smaller than 63, aborting...")
+            elif second > 125:
+                raise NotImplementedError("No way I'm implementing this...") 
+            else:
+                # N(n)
+                arr = arr - 63
+                n = arr[1]
+                retArrd = np.zeros((n, n), dtype=np.int_)
+                
+                # R(x)
+                # again technically we would be better off writing our own numpy
+                # extension because all of the functions just suck and can't avoid 
+                # adding padding
+                # A C extension would be nice
+                bits = np.unpackbits(arr[2:], bitorder='big') 
+                idx = 2
+                for i in range(n):
+                    # skip every 2 characters in front for every 6 characters read
+                    for j in range(n):
+                        retArrd[i, j] = bits[idx]
+                        idx += 1 
+                        if (idx % 8 == 0):
+                            #print("skipping pos", idx)
+                            idx += 2
+                #print(retArrd)
+                vti = {}
+                itv = {}
+                for i in range(n):
+                    vti[str(i)] = i;
+                    itv[i] = str(i);
+            return cls(array=retArrd, itv=itv, vti=vti, directed=True)
+
         else:
             raise NotImplemented
 
@@ -344,6 +373,7 @@ class GraphAdj:
 
     def __to_d6(self, path=""):
         """ Invoked when graph is undirected."""
+        size = self.adjMatrix.shape(0)
         return NotImplemented
 
 
@@ -351,12 +381,15 @@ class GraphAdj:
     def __n_decode(n: int) -> int:
         """
         Helper private static method to help with n decoding.
+        Currently not used.
         """
         if (n <= 125 and n >= 63):
             return n-63;
         elif ( n <= 258047):
+            # single 126 w/ 3 graph6 chars (18b) 
             raise NotImplementedError("No way I'm implementing this")
         elif ( n <= 68719476735):
+	    # double 126 w/ 6 graph6 chars (36b) 
             raise NotImplementedError("No way I'm implementing this")
         else:
             raise ValueError("Invalid n value")
@@ -365,12 +398,15 @@ class GraphAdj:
     def __n_encode(n: int) -> int:
         """
         Helper private static method to help with n encoding.
+        Currently not used.
         """
         if (n <= 62 and n >= 0):
             return n+63;
         elif ( n <= 258047):
+            # single 126 w/ 3 graph6 chars (18b) 
             raise NotImplementedError("No way I'm implementing this")
         elif ( n <= 68719476735):
+            # double 126 w/ 6 graph6 chars (36b) 
             raise NotImplementedError("No way I'm implementing this")
         else:
             raise ValueError("Invalid n value")
@@ -437,3 +473,10 @@ assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
 
 # GRAPH6 TEST
 graph6 = GraphAdj.from_graph6("DQc")
+diff = GraphAdj.from_graph6("G}l~~{")
+print(diff)
+
+# DIGRAPH6 Test
+
+digraph6 = GraphAdj.from_digraph6("&DI?AO?")
+print(digraph6)
