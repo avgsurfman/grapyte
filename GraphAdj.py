@@ -32,12 +32,13 @@ class GraphAdj:
         
         """
         # set basic params
+        # TODO: Make this private.
         self.directed = directed
         self.name = name
         
         if array is None:
             # sort set
-            # assumes only strings for now
+            # Assumes strings.
             templist = sorted(vertex)
              
             # technically those two should be linked somehow but they arent
@@ -136,7 +137,7 @@ class GraphAdj:
            if not self.directed:
               self.adjMatrix[d, c] += 1
         else:
-           raise TypeError(f"Bad Type: Edge is a {edge}")
+           raise TypeError(f"Bad Type: Edge is a {edge}! Expected a tuple...")
 
 
     def remove_edge(self, edge: tuple):
@@ -144,7 +145,6 @@ class GraphAdj:
         Removes an edge. Throws an error if there is no such edge or 
             there are no such edges (0).
         """
-        #try:
         a, b  = edge
         c, d  = self.VertexToIndex[a], self.VertexToIndex[b]
         if (self.adjMatrix[c, d] > 0):
@@ -153,31 +153,41 @@ class GraphAdj:
               self.adjMatrix[d, c] -= 1
         else:
               raise KeyError(f"Edge {edge} doesn't exist.")
-        
+     
        
+    #@cached_property
+    def count_3Cycles(self) -> int:
+        """
+        Count 3-Cycles in a graph. Does matrix multiplication M^3.
+        """
+        temp = np.linalg.matrix_power(self.adjMatrix, 3);
+        #print(temp)
+        return np.trace(temp) // 6
 
-    def count_nCycles(self, edge:tuple, n:int) -> int:
+
+
+    def count_nWalks(self, edge: tuple, n: int) -> int:
         """
-        Count Cycles in a graph. Does matrix multiplication M^num.
+        Count nWalks in a graph for a specific edge. Does matrix multiplication M^n.
+        Previously (incorrectly) called count_nCycles.
         """
-        # Slight error checking before an expensive $$$ operation
         a, b = edge
         if a not in self.VertexToIndex or b not in self.VertexToIndex:
             raise KeyError(f"{a} or {b} is not in the list of vertexes")
         c, d = self.VertexToIndex[a], self.VertexToIndex[b]
+        # ^ this abcd validation appears in code 3 or four times, 
+        # should be its own setter 
         
-        # ^ this abcd appears in code 3 or four times... 
-        # maybe create a private method?
         temp = np.linalg.matrix_power(self.adjMatrix, n);
-        #print(temp)
         return temp[c, d]
+
 
     
     def get_deg(vertex: str)-> int:
         """
         Gets the degree of a vertex.
         """
-        return NotImplemented
+        return self.adjMatrix[self.VertexToIndex[vertex]].sum()
 
 
 
@@ -189,7 +199,9 @@ class GraphAdj:
 
         return NotImplemented
 
-
+    """
+    🏭️ FACTORY METHODS
+    """
 
     def to_Graph(self):
         """
@@ -233,6 +245,10 @@ class GraphAdj:
         #print(adjMatrix)
         return cls(array=adjMatrix, itv=itv, vti=vti)
         
+    """
+    GRAPH6/DIGRAPH6 Parsing
+    """
+
 
     def to_graph6(self, path=""):
         """ If path is none returns a string, or writes to file
@@ -374,6 +390,10 @@ class GraphAdj:
     def __to_d6(self, path=""):
         """ Invoked when graph is undirected."""
         size = self.adjMatrix.shape(0)
+        # prepare the numpy array prepending 38 and N(n)
+        # temp = np.
+        # apply __nencode on each term temp[1:]
+        # Convert to string
         return NotImplemented
 
 
@@ -411,6 +431,12 @@ class GraphAdj:
         else:
             raise ValueError("Invalid n value")
 
+
+
+"""
+ (The) Finest selection of tests 
+ (Should be pytest)
+"""
 
 # Directed tests
 newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
@@ -454,8 +480,9 @@ print(newGraph)
 
 M = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Lecture", directed=False)        
 print(M)
-assert M.count_nCycles(('a', 'c'), 2) == 2, "Should be 2"
-assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
+assert M.count_nWalks(('a', 'c'), 2) == 2, "Should be 2"
+assert M.count_nWalks(('a', 'c'), 3) == 5, "Should be 5"
+print(f"M 3-Cycles: {M.count_3Cycles()}")
 
 
 # List test
@@ -463,6 +490,8 @@ assert M.count_nCycles(('a', 'c'), 3) == 5, "Should be 5"
 #print(List)
 #print(List.to_GraphAdj())
 
+
+# Error testing
 #newGraph.add_edge(("z", "y")) #errors out on purpose
 #newGraph.remove_edge(("a", "b"))
 #print(newGraph)
