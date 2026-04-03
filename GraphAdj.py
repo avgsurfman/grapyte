@@ -121,6 +121,17 @@ class GraphAdj:
         del self.VertexToIndex[vertex]
         del self.IndexToVertex[pos]
         
+        size = self.adjMatrix.shape[0]
+        for i in range(pos, size):
+            # start with the offending position, look onto next,
+            # swap, update the indicies
+            # Omega(2*(V - pos))
+            temp = self.IndexToVertex[i+1]
+            self.VertexToIndex[temp] = i
+            self.IndexToVertex[pos] = temp
+            # delete the item with the wrong position ( should be done at the end)
+        del self.IndexToVertex[size]
+        
 
     def add_edge(self, edge: tuple):
         """

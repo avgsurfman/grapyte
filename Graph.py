@@ -38,7 +38,7 @@ class Graph:
            # YOLO no type checking
            self.adjList = adjList  
         
-        print(self.adjList)
+        #print(self.adjList)
  
 
     def __str__(self):
@@ -69,7 +69,7 @@ class Graph:
            if self.directed:
               # unfortunately we have to traverse the entire list to check
               # for references
-              t1 = time.perf_counter_ns()
+              #t1 = time.perf_counter_ns()
               # a simple loop takes only 3-5us - list comp about 5-7 us
               for key in self.adjList:
                   for v in self.adjList[key]:
@@ -77,8 +77,8 @@ class Graph:
                           self.adjList[key].remove(v)
                   #self.adjList[key] = [v for v in self.adjList[key] if v != vertex]
                   #print(temp)
-              t2 = time.perf_counter_ns()
-              print(f"time:", t2 - t1)
+              #t2 = time.perf_counter_ns()
+              #print(f"time:", t2 - t1)
                       
               del self.adjList[vertex]
            else:
@@ -122,7 +122,7 @@ class Graph:
 
     def to_GraphAdj(self):
         """
-        Either print out an adjecency matrix or create a new graph. 
+        Convert the Graph into GraphAdj.
         """
         # return a class by just calling the GraphAdj()
         # constructor (via a factory method)
@@ -144,7 +144,7 @@ class Graph:
         
         for x in it:
             u, v = it.multi_index
-            print("%d <%s>, u=%s v=%s " % (x, it.multi_index, u , v), end=' \n')
+            #print("%d <%s>, u=%s v=%s " % (x, it.multi_index, u , v), end=' \n')
             for i in range(x):
                 if itv[u] not in adjList:
                     adjList[itv[u]] = []
