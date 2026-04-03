@@ -160,6 +160,7 @@ class GraphAdj:
         """
         Count 3-Cycles in a graph. Does matrix multiplication M^3.
         """
+        # ngl not sure if this works
         temp = np.linalg.matrix_power(self.adjMatrix, 3);
         #print(temp)
         return np.trace(temp) // 6

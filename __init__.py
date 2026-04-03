@@ -1,7 +1,7 @@
-"""graPyte - a small Python graph library."""
+"""grapyte - a small python graph library."""
 __version__ = "0.0.1"
-__author__ = "Franciszek Moszczuk, Karol Mądraszek"
-PACKAGE_NAME = "grapyte"
+__author__ = "franciszek moszczuk, karol mądraszek"
+package_name = "grapyte"
 
 __all__ = ['Graph', 'GraphAdj', 'GraphEdge']
 
