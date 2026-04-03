@@ -72,6 +72,7 @@ class GraphEdge:
         """
         Simple Graph call since this interface is backwards compatible.
         """
+        import grapyte.Graph
         return Graph(self.vertex, self.edges)
         
 
@@ -79,6 +80,7 @@ class GraphEdge:
         """
         Simple Graph call since this interface is backwards compatible.
         """
+        import grapyte.GraphAdj
         return GraphAdj(self.vertex, self.edges)
 
 
