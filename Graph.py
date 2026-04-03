@@ -1,4 +1,4 @@
-import time
+import numpy as np
 
 class Graph:
     """
@@ -8,44 +8,43 @@ class Graph:
     """
 
     
-    def __init__(self, vertex: set, edges: list, name = "Unnamed", directed = True):
+    def __init__(self, vertex: set, edges: list = [], name = "Unnamed", directed = True, adjList = None):
         """
         Uses tuples by default because the graph isn't the same after it's modified,
         therefore it makes sense to make edges a list of tuples
         """
-        # adjacency 
+        # TODO: make this private
         self.directed = directed
         self.name = name
-        # sort set
-        # assumes only strings for now
+        # set S
         templist = sorted(vertex)
-        
-        # as it is the case in the adjacency matrix I need a 
-        # f(X): int -> vertex 
-        #self.IndexToVertex = dict(enumerate(templist))
         self.vertex = vertex
-        
+         
         # self.adjList: 
-        # f(X): dict<int> -> list<tuple>
-        # maybe change this to str? no need to vti
-        self.adjList = {}
-        for i in range(len(templist)):
-            self.adjList[templist[i]] = []
-        print(self.adjList)
-            
-        for u, v in edges:
-            if u not in self.vertex or v not in self.vertex:
-               print(f"{u} or {v} not in set, skipping...")
-            else:
-               self.adjList[u].append(v)
-               if not self.directed:
-                   self.adjList[v].append(u)
+        # f(X): dict<str> -> list<str>
+        # honestly this would be much better in TypeScript
+        if not adjList:
+            self.adjList = {}
+            for i in range(len(templist)):
+                self.adjList[templist[i]] = []
+            for u, v in edges:
+                if u not in self.vertex or v not in self.vertex:
+                   print(f"{u} or {v} not in set, skipping...")
+                else:
+                   self.adjList[u].append(v)
+                   if not self.directed:
+                       self.adjList[v].append(u)
+        else:
+           # YOLO no type checking
+           self.adjList = adjList  
         
         print(self.adjList)
  
+
     def __str__(self):
         return f"Multigraph {self.name} with the following params:\nVertex:\
 {self.vertex}, Adjacency list: {self.adjList}"
+
 
     def add_vertex(self, vertex: str):
         """
@@ -84,8 +83,8 @@ class Graph:
               del self.adjList[vertex]
            else:
                #loop through all of the edges (u, v) to remove edges from
-               # all adjacent vertex v, then remove the final dict
-               # this way we are not iterating over the object we are modifying
+               # all adjacent vertexes v, then remove the final dict
+               # this way we are only iterating over a single list,
                # keeping this linear (O(V))
                for u in self.adjList[vertex]:
                    # reverse lookup
@@ -93,6 +92,7 @@ class Graph:
                del self.adjList[vertex]
          
         self.vertex.remove(vertex)
+
 
     def add_edge(self, edge: tuple):
         """
@@ -126,23 +126,37 @@ class Graph:
         """
         # return a class by just calling the GraphAdj()
         # constructor (via a factory method)
-        # this way we are keeping the classes isolated (parser for Graph
-        # Adj is elsewhere as it should)
+        
+        import grapyte.GraphAdj as GraphAdj
         return GraphAdj.from_Graph(self.adjList, self.name)
         
     @classmethod
-    def from_GraphAdj(cls, matrix, itv):
+    def from_GraphAdj(cls, matrix, itv, vti, directed):
         """ Creates an adjacency list based on the numpy array
         and the ITV matrix. 
         """
-        return NotImplemented
+        
+        vertex = set(vti.keys())
+        print(vertex)
+        adjList = {}
+        # create a numpy iterator
+        it = np.nditer(matrix, flags=['multi_index'])
+        
+        for x in it:
+            u, v = it.multi_index
+            print("%d <%s>, u=%s v=%s " % (x, it.multi_index, u , v), end=' \n')
+            for i in range(x):
+                if itv[u] not in adjList:
+                    adjList[itv[u]] = []
+                adjList[itv[u]].append(itv[v])
+        return cls(vertex, directed=directed, adjList=adjList)
 
 
     def to_graph6(self, path=""):
         """ If path is none returns a string, or writes to file
         the graph in graph6 format"""
 
-        return NotImplemented
+        return NotImplemented("Please convert to AdjMatrix to read/write graph6.")
 
 
     @classmethod
@@ -151,7 +165,6 @@ class Graph:
         return NotImplemented
      
 
-    
 
 
 # directed

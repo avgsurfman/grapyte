@@ -210,9 +210,11 @@ class GraphAdj:
         """
         # return a class by just calling the GraphAdj()
         # constructor (via a factory method)
-        # this way we are keeping the classes isolated (parser for Graph
-        # Adj is defined in the Graph (Adjecency) class as it should be)
-        return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex)
+        # this way we are keeping the classes isolated and self-referencing
+        # https://stackoverflow.com/questions/744373/what-happens-when-using-mutual-or-circular-cyclic-imports
+        import grapyte.Graph as Graph
+        return Graph.from_GraphAdj(self.adjMatrix, self.IndexToVertex,
+                                   self.VertexToIndex, self.directed)
         
 
     @classmethod
@@ -275,7 +277,6 @@ class GraphAdj:
         elif text:
             # TODO: strip header
             # if data.startswith(">>graph6<<")
-            # read from a string with string buffer
             arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
             # if the first sign ISN'T 38 '&' -> d6
             first = arr[0]
@@ -300,15 +301,16 @@ class GraphAdj:
                 bits = np.unpackbits(arr[1:], bitorder='big') 
                 # skip two first bits
                 idx = 2
+                # TODO: replace/compare with multiindex np.nditer
                 for i in range(1, n):
-                    # skip every 2 characters in front for every 6 characters read
                     for j in range(i):
                         #print((j, i), idx, bits[idx]) #UNCOMMENT FOR SPEC ORDER
                         retArrd[i, j] = bits[idx]
                         retArrd[j, i] = bits[idx]
                         idx += 1 
                         if (idx % 8 == 0):
-                            #print("skipping pos", idx)
+                            # skip every 2 characters in front for every 6 characters read
+                            # print("skipping pos", idx)
                             idx += 2
                             
                 # assign a default dict
