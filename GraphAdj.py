@@ -187,7 +187,12 @@ class GraphAdj:
         """
         Gets the degree of a vertex.
         """
-        return self.adjMatrix[self.VertexToIndex[vertex]].sum()
+        # Loops v -> v are counted twice
+        # therefore 2*a+b+c... = sum(row) + a
+        pos = self.VertexToIndex[vertex]
+        rowsum = self.adjMatrix[self.VertexToIndex[vertex]].sum()
+        return rowsum + self.adjMatrix[pos, pos]
+        
 
 
 
@@ -295,7 +300,6 @@ class GraphAdj:
                 # Did you know that the graph6 spec is outright wrong?
                 # The spec says to consider the upper triangle, while
                 # LITERALLY listing the lower triangle in an example
-                # and in an incomprehensible notation at that!
                 # See more: 
                 # https://stackoverflow.com/questions/44532492/how-does-graph6-format-work
                 bits = np.unpackbits(arr[1:], bitorder='big') 
