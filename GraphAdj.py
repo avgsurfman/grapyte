@@ -194,27 +194,52 @@ class GraphAdj:
         return temp[c, d]
 
 
+    def count_edges(self)-> int:
+        """
+        Gets the amount of edges in a graph.
+        """
+        if self.directed:
+            return self.adjMatrix.sum()
+        else:
+            return self.adjMatrix.sum() // 2
+
     
-    def get_deg(vertex: str)-> int:
+    def get_deg(self, vertex: str)-> int:
         """
         Gets the degree of a vertex.
         """
         # Loops v -> v are counted twice
         # therefore 2*a+b+c... = sum(row) + a
         pos = self.VertexToIndex[vertex]
-        rowsum = self.adjMatrix[self.VertexToIndex[vertex]].sum()
-        return rowsum + self.adjMatrix[pos, pos]
+        # row sum + a
+        return self.adjMatrix[pos].sum() + self.adjMatrix[pos, pos]
         
 
 
-
-    def get_Annihilation(vertex: str)-> int:
+    def get_annihilation(self)-> int:
         """
-        Gets the annihilation number of a vertex.
+        Gets the annihilation number of a Graph.
         Uses get_deg.
         """
-
-        return NotImplemented
+        #todo: replace with numpy cumsum
+        degs = sorted([self.get_deg(v) for v in self.VertexToIndex.keys()])
+        edges = self.count_edges() # not using the "handshake" lemma as
+        # our graphs can be both directed and undirected.
+        d_sum = 0
+        i = 0 
+        while (d_sum <= edges):
+            d_sum += degs[i] 
+            i += 1
+        return i - 1
+        """
+        The only AI-gen piece of code but then again
+        AI can only steal 
+        I suppose the code for this is in NetworkX     
+        
+        degs = np.sort(self.adjMatrix.sum(axis=1) + np.diag(self.adjMatrix))
+        edges = self.count_edges()
+        return int(np.searchsorted(np.cumsum(degs), edges, side='right'))
+        """
 
     """
     🏭️ FACTORY METHODS
