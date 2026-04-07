@@ -1,6 +1,5 @@
 # grapyte - a simple graph library, written in Python
 
-
 Prereqs:
 
 1) Numpy
@@ -18,3 +17,5 @@ Features:
 Also there is a Latex document is you are interested in the spec, I guess...
 
 
+TODO:
+-coloring
