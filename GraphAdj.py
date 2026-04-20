@@ -165,7 +165,9 @@ class GraphAdj:
         else:
               raise KeyError(f"Edge {edge} doesn't exist.")
      
-       
+    # TODO: this works for graphs, not sure about n-graphs
+    # maybe check w the naive algorithm?
+    #    
     #@cached_property
     def count_3Cycles(self) -> int:
         """
@@ -173,7 +175,6 @@ class GraphAdj:
         """
         # ngl not sure if this works
         temp = np.linalg.matrix_power(self.adjMatrix, 3);
-        #print(temp)
         return np.trace(temp) // 6
 
 
@@ -189,7 +190,6 @@ class GraphAdj:
         c, d = self.VertexToIndex[a], self.VertexToIndex[b]
         # ^ this abcd validation appears in code 3 or four times, 
         # should be its own setter 
-        
         temp = np.linalg.matrix_power(self.adjMatrix, n);
         return temp[c, d]
 
@@ -326,8 +326,11 @@ class GraphAdj:
                 raise ValueError(f"Wrong format: char[0]={c} is smaller than 63, aborting...")
             elif first > 125:
                 raise NotImplementedError("No way I'm implementing this...") 
+                # TODO: IMPLEMENT THIS!!!
             else:
+                # TODO: measure speed.
                 arr = arr - 63
+                #arr -= 63
                 # N(n)
                 n = arr[0]
                 retArrd = np.zeros((n, n), dtype=np.int_)
@@ -342,13 +345,16 @@ class GraphAdj:
                 bits = np.unpackbits(arr[1:], bitorder='big') 
                 # skip two first bits
                 idx = 2
-                # TODO: replace/compare with multiindex np.nditer
+                # TODO: replace/compare with np.trilindices
+                # multiindex np.nditer for d6
                 for i in range(1, n):
                     for j in range(i):
                         #print((j, i), idx, bits[idx]) #UNCOMMENT FOR SPEC ORDER
+                        # fix wide strides?
                         retArrd[i, j] = bits[idx]
                         retArrd[j, i] = bits[idx]
-                        idx += 1 
+                        idx += 1
+                        # fix this too 
                         if (idx % 8 == 0):
                             # skip every 2 characters in front for every 6 characters read
                             # print("skipping pos", idx)
@@ -369,6 +375,7 @@ class GraphAdj:
     def from_digraph6(cls, text: str = None, path=""):
         """ 
             Read digraph6. Yes it also imports a whole file to memory.
+            TODO: OPTIMIZE THIS!!!
         """
         if path:
             # read from file
@@ -384,6 +391,7 @@ class GraphAdj:
                 raise ValueError(f"Unknown format. {c} is smaller than 63, aborting...")
             elif second > 125:
                 raise NotImplementedError("No way I'm implementing this...") 
+                # TODO: IMPLEMENT THIS!!!
             else:
                 # N(n)
                 arr = arr - 63
@@ -552,3 +560,4 @@ print(diff)
 
 digraph6 = GraphAdj.from_digraph6("&DI?AO?")
 print(digraph6)
+# required dep

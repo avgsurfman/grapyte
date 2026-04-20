@@ -18,4 +18,12 @@ Also there is a Latex document is you are interested in the spec, I guess...
 
 
 TODO:
--coloring
+-Subgraph the AdjMatrix class (no multiedges, don't count loops twice etc.)
+-coloring: (bruteforce, LR, RR)
+-draw graph without graphviz (or with)
+-better testing w/ pytest
+-H-index(?!)
+-graph <= (Included/excluded operation)
+ideas:
+https://spidermonkey.dev/blog/2025/10/28/iongraph-web.html
+-rewrite this in typescript?

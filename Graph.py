@@ -1,4 +1,5 @@
 import numpy as np
+import time
 
 class Graph:
     """
@@ -69,16 +70,24 @@ class Graph:
            if self.directed:
               # unfortunately we have to traverse the entire list to check
               # for references
-              #t1 = time.perf_counter_ns()
-              # a simple loop takes only 3-5us - list comp about 5-7 us
+              t1 = time.perf_counter_ns()
+              update_dict = {}
               for key in self.adjList:
-                  for v in self.adjList[key]:
-                      if (v == vertex):
-                          self.adjList[key].remove(v)
-                  #self.adjList[key] = [v for v in self.adjList[key] if v != vertex]
-                  #print(temp)
-              #t2 = time.perf_counter_ns()
-              #print(f"time:", t2 - t1)
+                  # I fucking hate this but it has to stay, I think.
+                  # 2 us slower than the original but also 4 faster than reverse iter
+                  # Method 1
+                  self.adjList[key] = [v for v in self.adjList[key] if v != vertex]
+                  # Method 2 (incorrect)
+                  #neighbors  = self.adjList[key] # pocket reference
+                  #for v in neighbors:
+                  #    if (v == vertex):
+                  #        self.adjList[key].remove(v) 
+                  # Method 3
+                  #for i in range(len(neighbors) -1, -1, -1):
+                  #    if neighbors[i] == vertex:
+                  #        del neighbors[i]
+              t2 = time.perf_counter_ns()
+              print(f"time:", t2 - t1)
                       
               del self.adjList[vertex]
            else:
@@ -174,9 +183,10 @@ class Graph:
 #print(newGraph)
 #newGraph.add_edge(("b", "z"))
 #print(newGraph)
-##newGraph.add_edge(("z", "y")) #errors out on purpose
+#newGraph.add_edge(("z", "y")) #errors out on purpose
 #newGraph.remove_edge(("a", "b"))
 #print(newGraph)
 #newGraph.remove_vertex("b")
-## newGraph.remove_vertex("p") # key not in set
+# newGraph.remove_vertex("p") # key not in set
 #print(newGraph)
+
