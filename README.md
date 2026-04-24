@@ -8,13 +8,17 @@ Prereqs:
 
 Features:
 - Reads g6/d6 format
+- Multigraphs!
+- Simple Graphs
 - Adjacency list graphs
 - Matrix graphs
 - Edge graphs
 - Basic operations on graphs.
 - Native UTF-8 Support.
+- And much more!
 
 Also there is a Latex document is you are interested in the spec, I guess...
+
 
 
 TODO:

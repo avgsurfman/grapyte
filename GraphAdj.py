@@ -62,8 +62,8 @@ class GraphAdj:
                     if not self.directed and (u != v):
                         # avoids loop duplication 
                         self.adjMatrix[self.VertexToIndex[v], self.VertexToIndex[u]] += 1
-                except KeyError:
-                    print(f"Vertex {u} or {v} is missing from set, skipping")
+                except KeyError as err:
+                    raise KeyError(f"Vertex {u} or {v} is missing from set: {vertex}") from err
         else: 
             self.adjMatrix = array
             self.VertexToIndex = vti
@@ -308,7 +308,7 @@ class GraphAdj:
 
 
     @classmethod
-    def from_graph6(cls, text: str = None, path=""):
+    def from_graph6(cls, data: str | bytes = None, path="") -> np.ndarray:
         """ 
             Read graph6. 
             Yes, it imports a whole file to memory.
@@ -316,63 +316,52 @@ class GraphAdj:
         if path:
             # read from file
             raise NotImplementedError
-        elif text:
-            # TODO: strip header
-            # if data.startswith(">>graph6<<")
-            arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
-            # if the first sign ISN'T 38 '&' -> d6
-            first = arr[0]
-            if first < 63:
-                raise ValueError(f"Wrong format: char[0]={c} is smaller than 63, aborting...")
-            elif first > 125:
-                raise NotImplementedError("No way I'm implementing this...") 
-                # TODO: IMPLEMENT THIS!!!
-            else:
-                # TODO: measure speed.
-                arr = arr - 63
-                #arr -= 63
-                # N(n)
-                n = arr[0]
-                retArrd = np.zeros((n, n), dtype=np.int_)
-                
-                # R(x)
-                # FUN FACT OF THE DAY!
-                # Did you know that the graph6 spec is outright wrong?
-                # The spec says to consider the upper triangle, while
-                # LITERALLY listing the lower triangle in an example
-                # See more: 
-                # https://stackoverflow.com/questions/44532492/how-does-graph6-format-work
-                bits = np.unpackbits(arr[1:], bitorder='big') 
-                # skip two first bits
-                idx = 2
-                # TODO: replace/compare with np.trilindices
-                # multiindex np.nditer for d6
-                for i in range(1, n):
-                    for j in range(i):
-                        #print((j, i), idx, bits[idx]) #UNCOMMENT FOR SPEC ORDER
-                        # fix wide strides?
-                        retArrd[i, j] = bits[idx]
-                        retArrd[j, i] = bits[idx]
-                        idx += 1
-                        # fix this too 
-                        if (idx % 8 == 0):
-                            # skip every 2 characters in front for every 6 characters read
-                            # print("skipping pos", idx)
-                            idx += 2
-                            
-                # assign a default dict
-                vti = {}
-                itv = {}
-                for i in range(n):
-                    vti[str(i)] = i;
-                    itv[i] = str(i);
-            return cls(array=retArrd, itv=itv, vti=vti, directed=False)
+        elif data:
+             """
+             Community fix by Fred Bill on Stackoverflow. Thanks!
+             """
+             if isinstance(data, str):
+                 data = data.encode("ascii")
+             # not technically needed
+             #data = data.rstrip(b"\n")
+             if data.startswith(b">>graph6<<"):
+                 data = data[10:]
+
+             raw = np.frombuffer(data, dtype=np.uint8)
+             if raw.size == 0 or np.any((raw < 63) | (raw > 126)):
+                 raise ValueError("invalid graph6 data")
+             raw = raw - 63
+             # cls hack and validation
+             n, offset = cls.decode_graph6_n(raw)
+             m = n * (n - 1) // 2  # number of edges in the upper triangle of the adjacency matrix
+             nd = (m + 5) // 6  # i.e. ceil(m / 6)
+             if raw.size != offset + nd:
+                 raise ValueError("invalid graph6 data")
+                  
+             # bit array hacks
+             payload = raw[offset:]
+             bits = np.unpackbits(payload[:, np.newaxis], axis=1, bitorder="big")
+             bits = bits[:, 2:].ravel()[:m]  # skip the first 2 bits of each 8 bits and then flatten
+
+             A = np.zeros((n, n), dtype=np.uint8)
+             j, i = np.tril_indices(n, k=-1)  # i: 0,0,1,0,1,2,0,1,2,3,...; j: 1,2,2,3,3,3,4,4,4,4...
+             A[i, j] = bits
+             A[j, i] = bits
+             # assign a default dict
+             vti = {}
+             itv = {}
+             for i in range(n):
+                 # cache the lookup, as adviced by jerome richard
+                 lookup = str(i)
+                 vti[lookup] = i;
+                 itv[i] = lookup;
+             return cls(array=A, itv=itv, vti=vti, directed=False)
         else:
             return NotImplemented
      
 
     @classmethod
-    def from_digraph6(cls, text: str = None, path=""):
+    def from_digraph6(cls, data: str | bytes = None, path=""):
         """ 
             Read digraph6. Yes it also imports a whole file to memory.
             TODO: OPTIMIZE THIS!!!
@@ -380,21 +369,28 @@ class GraphAdj:
         if path:
             # read from file
             raise NotImplementedError
-        elif text is not None:
-            arr = np.frombuffer(bytes(text, encoding="ascii"), dtype=np.uint8)
+        elif data is not None:
+             if isinstance(data, str):
+                 data = data.encode("ascii")
+             data = data.rstrip(b"\n")
+             if data.startswith(b">>digraph6<<"):
+                 data = data[12:]
+
+            arr = np.frombuffer(data, dtype=np.uint8)
             # if the first sign ISN'T 38 '&' -> throw an error
             first = arr[0]
             second = arr[1]
             if (first != 38):
-                raise ValueError("Not a proper D6 graph, & missing...")
+                raise ValueError("Not a proper d6 digraph, & missing...")
+            # TODO: rewrite!
             if second < 63:
                 raise ValueError(f"Unknown format. {c} is smaller than 63, aborting...")
             elif second > 125:
                 raise NotImplementedError("No way I'm implementing this...") 
-                # TODO: IMPLEMENT THIS!!!
             else:
                 # N(n)
                 arr = arr - 63
+                # TODO:get dimensions from the helper function
                 n = arr[1]
                 retArrd = np.zeros((n, n), dtype=np.int_)
                 
@@ -404,6 +400,8 @@ class GraphAdj:
                 # adding padding
                 # A C extension would be nice
                 bits = np.unpackbits(arr[2:], bitorder='big') 
+                 
+                # TODO: replace with np indicies 
                 idx = 2
                 for i in range(n):
                     # skip every 2 characters in front for every 6 characters read
@@ -417,8 +415,9 @@ class GraphAdj:
                 vti = {}
                 itv = {}
                 for i in range(n):
-                    vti[str(i)] = i;
-                    itv[i] = str(i);
+                    lookup = str(i)
+                    vti[lookup] = i
+                    itv[i] = lookup
             return cls(array=retArrd, itv=itv, vti=vti, directed=True)
 
         else:
@@ -448,92 +447,106 @@ class GraphAdj:
         return NotImplemented
 
 
-    @staticmethod
-    def __n_decode(n: int) -> int:
+    @staticmethod 
+    def __decode_graph6_n(raw: np.ndarray) -> tuple[int, int]:
         """
         Helper private static method to help with n decoding.
-        Currently not used.
         """
-        if (n <= 125 and n >= 63):
-            return n-63;
-        elif ( n <= 258047):
-            # single 126 w/ 3 graph6 chars (18b) 
-            raise NotImplementedError("No way I'm implementing this")
-        elif ( n <= 68719476735):
-	    # double 126 w/ 6 graph6 chars (36b) 
-            raise NotImplementedError("No way I'm implementing this")
-        else:
-            raise ValueError("Invalid n value")
-     
-    @staticmethod
-    def __n_encode(n: int) -> int:
-        """
-        Helper private static method to help with n encoding.
-        Currently not used.
-        """
-        if (n <= 62 and n >= 0):
-            return n+63;
-        elif ( n <= 258047):
-            # single 126 w/ 3 graph6 chars (18b) 
-            raise NotImplementedError("No way I'm implementing this")
-        elif ( n <= 68719476735):
-            # double 126 w/ 6 graph6 chars (36b) 
-            raise NotImplementedError("No way I'm implementing this")
-        else:
-            raise ValueError("Invalid n value")
-
+        func = lambda accumulator, byte: (accumulator << 6) | int(byte)
+        if raw[0] <= 62:
+            return int(raw[0]), 1
+        # single 126(~) w/ 3 graph6 chars (18b) 
+        elif raw.size >= 4 and raw[1] <= 62:
+            return reduce(func, raw[1:4], 0), 4
+	# double 126(~) w/ 6 graph6 chars (36b) 
+        elif raw.size >= 8:
+            return reduce(func, raw[2:8], 0), 8
+        raise ValueError("invalid graph6 data")
+      
+    #@staticmethod
+    #def __encode_graph6_n() -> np.ndarray
+    #    """ TODO
+    #    """
+    #
+    #@staticmethod
+    #def __n_decode(n: int) -> int:
+    #    if (n <= 125 and n >= 63):
+    #        return n-63;
+    #    elif ( n <= 258047):
+    #        raise NotImplementedError("No way I'm implementing this")
+    #    elif ( n <= 68719476735):
+    #        raise NotImplementedError("No way I'm implementing this")
+    #    else:
+    #        raise ValueError("Invalid n value")
+    # 
+    #@staticmethod
+    #def __n_encode(n: int) -> int:
+    #    """
+    #    Helper private static method to help with n encoding.
+    #    Currently not used.
+    #    """
+    #    if (n <= 62 and n >= 0):
+    #        return n+63;
+    #    elif ( n <= 258047):
+    #        # single 126 w/ 3 graph6 chars (18b) 
+    #        raise NotImplementedError("No way I'm implementing this")
+    #    elif ( n <= 68719476735):
+    #        # double 126 w/ 6 graph6 chars (36b) 
+    #        raise NotImplementedError("No way I'm implementing this")
+    #    else:
+    #        raise ValueError("Invalid n value")
 
 
 """
  (The) Finest selection of tests 
- (Should be pytest)
+ Usage examples
 """
 
 # Directed tests
-newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
-print(newGraph)
 
-newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
-print(newGraph)
-
-# should error out
-newGraph = GraphAdj({'a', 'b', 'c'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
-print(newGraph)
-
-newGraph.add_vertex("z")
-print(newGraph)
-
-newGraph.add_edge(("b", "z"))
-print(newGraph)
-
+#newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
+#print(newGraph)
+#
+#newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
+#print(newGraph)
+#
+## should error out
+#newGraph = GraphAdj({'a', 'b', 'c'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
+#print(newGraph)
+#
+#newGraph.add_vertex("z")
+#print(newGraph)
+#
+#newGraph.add_edge(("b", "z"))
+#print(newGraph)
 
 # Undirected tests
 
-newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example", directed=False)        
-print(newGraph)
-newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example", directed=False)        
-print(newGraph)
-
-newGraph.add_vertex("z")
-print(newGraph)
-
-newGraph.add_edge(("b", "z"))
-print(newGraph)
-
-newGraph.remove_edge(("a", "b"))
-print(newGraph)
-
-newGraph.remove_vertex("b")
-print(newGraph)
+#newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example", directed=False)        
+#print(newGraph)
+#newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example", directed=False)        
+#print(newGraph)
+#
+#newGraph.add_vertex("z")
+#print(newGraph)
+#
+#newGraph.add_edge(("b", "z"))
+#print(newGraph)
+#
+#newGraph.remove_edge(("a", "b"))
+#print(newGraph)
+#
+#newGraph.remove_vertex("b")
+#print(newGraph)
 
 # At this point I should be using pytest...
 # lecture example
 
-M = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Lecture", directed=False)        
-print(M)
-assert M.count_nWalks(('a', 'c'), 2) == 2, "Should be 2"
-assert M.count_nWalks(('a', 'c'), 3) == 5, "Should be 5"
-print(f"M 3-Cycles: {M.count_3Cycles()}")
+#M = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Lecture", directed=False)        
+#print(M)
+#assert M.count_nWalks(('a', 'c'), 2) == 2, "Should be 2"
+#assert M.count_nWalks(('a', 'c'), 3) == 5, "Should be 5"
+#print(f"M 3-Cycles: {M.count_3Cycles()}")
 
 
 # List test
