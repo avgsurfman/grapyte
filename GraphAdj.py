@@ -1,6 +1,8 @@
 # required dep
-import io
+from functools import reduce
+
 import numpy as np
+
 
 class GraphAdj:
     """
@@ -70,6 +72,11 @@ class GraphAdj:
             self.IndexToVertex = itv
            
 
+
+    """
+    Overloaded "dunder" methods go here.
+    """
+
  
     def __str__(self):
         rtrnString = f"{'Directed' if self.directed else 'Undirected'}\
@@ -82,6 +89,12 @@ class GraphAdj:
             rtrnString += '%s [%s]\n' % (row_label, ' '.join('%03s' % i for i in row))
         # this is probably why java has a string builder class (no wonder)
         return rtrnString
+
+
+    """
+    Basic methods (adding, removing a vertex, edge...) 
+    """
+
 
     def add_vertex(self, vertex: str):
         """
@@ -164,11 +177,16 @@ class GraphAdj:
               self.adjMatrix[d, c] -= 1
         else:
               raise KeyError(f"Edge {edge} doesn't exist.")
-     
+    
+    """
+    Cycle counting, n-Walks...
+    """
+
+
+ 
     # TODO: this works for graphs, not sure about n-graphs
     # maybe check w the naive algorithm?
     #    
-    #@cached_property
     def count_3Cycles(self) -> int:
         """
         Count 3-Cycles in a graph. Does matrix multiplication M^3.
@@ -214,6 +232,38 @@ class GraphAdj:
         # row sum + a
         return self.adjMatrix[pos].sum() + self.adjMatrix[pos, pos]
         
+    
+    #def get_max_deg_numpy(self) -> int:
+    #    """
+    #    Returns the maximum degree of a graph, s.t.
+    #    ∆(G) = max{deg(v) | v ∈ V (G)}
+    #    SOMEHOW SLOWER THAN THE PYTHON METHOD! WTF
+    #    """
+    #    # again this should be its own function
+    #    degs = np.fromiter((self.get_deg(v) for v in self.VertexToIndex.keys()), 
+    #                       dtype=int)
+    #    return int(np.max(degs))
+         
+         
+    def get_max_deg(self) -> int:
+        """
+        Returns the maximum degree of a graph, s.t.
+        ∆(G) = max{deg(v) | v ∈ V (G)}
+        """
+        # again this should be its own function
+        degs = sorted([self.get_deg(v) for v in self.VertexToIndex.keys()])
+        return max(degs)
+
+
+    def get_min_deg(self) -> int:
+    
+        """
+        Returns the minimum degree of a graph, s.t.
+        δ(G) = min{deg(v) | v ∈ V (G)}
+        """
+        # again this should be its own function
+        degs = sorted([self.get_deg(v) for v in self.VertexToIndex.keys()])
+        return min(degs)
 
 
     def get_annihilation(self)-> int:
@@ -302,7 +352,6 @@ class GraphAdj:
             res = self.__to_d6()
         else:
             res = self.__to_g6()
-        
         return res
 
 
@@ -332,7 +381,7 @@ class GraphAdj:
                  raise ValueError("invalid graph6 data")
              raw = raw - 63
              # cls hack and validation
-             n, offset = cls.decode_graph6_n(raw)
+             n, offset = cls.__decode_graph6_n(raw)
              m = n * (n - 1) // 2  # number of edges in the upper triangle of the adjacency matrix
              nd = (m + 5) // 6  # i.e. ceil(m / 6)
              if raw.size != offset + nd:
@@ -340,8 +389,11 @@ class GraphAdj:
                   
              # bit array hacks
              payload = raw[offset:]
+             print(payload)
              bits = np.unpackbits(payload[:, np.newaxis], axis=1, bitorder="big")
+             print(f"unpack bits: {bits}")
              bits = bits[:, 2:].ravel()[:m]  # skip the first 2 bits of each 8 bits and then flatten
+             print(f"bit skip: {bits}")
 
              A = np.zeros((n, n), dtype=np.uint8)
              j, i = np.tril_indices(n, k=-1)  # i: 0,0,1,0,1,2,0,1,2,3,...; j: 1,2,2,3,3,3,4,4,4,4...
@@ -370,11 +422,11 @@ class GraphAdj:
             # read from file
             raise NotImplementedError
         elif data is not None:
-             if isinstance(data, str):
-                 data = data.encode("ascii")
-             data = data.rstrip(b"\n")
-             if data.startswith(b">>digraph6<<"):
-                 data = data[12:]
+            if isinstance(data, str):
+                data = data.encode("ascii")
+            data = data.rstrip(b"\n")
+            if data.startswith(b">>digraph6<<"):
+                data = data[12:]
 
             arr = np.frombuffer(data, dtype=np.uint8)
             # if the first sign ISN'T 38 '&' -> throw an error
@@ -411,7 +463,8 @@ class GraphAdj:
                         if (idx % 8 == 0):
                             #print("skipping pos", idx)
                             idx += 2
-                #print(retArrd)
+
+
                 vti = {}
                 itv = {}
                 for i in range(n):
@@ -432,6 +485,9 @@ class GraphAdj:
         # we are using array's size just in case the helper
         # dicts go wrong
         size = self.adjMatrix.shape(0)
+        # Encode size, flatten the array
+        # validate if np.any isn't greater than 1
+        
         for i in range(size):
             continue
         #return res
@@ -465,9 +521,11 @@ class GraphAdj:
       
     #@staticmethod
     #def __encode_graph6_n() -> np.ndarray
-    #    """ TODO
+    #    """ 
+    #    TODO
     #    """
-    #
+    #    func = 
+    
     #@staticmethod
     #def __n_decode(n: int) -> int:
     #    if (n <= 125 and n >= 63):

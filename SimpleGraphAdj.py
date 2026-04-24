@@ -10,8 +10,8 @@ class SimpleGraphAdj(GraphAdj):
         # TODO: copy paste old constructor.
         # TODO: Override some methods that are faster for simple graphs.
  
-        #super(GraphAdj, self).__init__(vertex, edge, name, directed, adjList)
-        
+        super().__init__(vertex, edges, name, directed, adjList)
+         
         # post-parsing
        
         # what to do next...
@@ -44,7 +44,7 @@ class SimpleGraphAdj(GraphAdj):
 
     def get_deg(self, vertex: str)-> int:
         """
-        Gets the degree of a vertex.
+        Gets the degree deg(v) of a vertex.
         """
         # Loops v -> v are counted twice, 2*a+b+c... = sum(row) + a
         # Simple graphs don't have loops idiot 
@@ -113,9 +113,13 @@ class SimpleGraphAdj(GraphAdj):
  
     def color_greedy(self) -> int:
         """
-        Returns the greedy coloring approximation of the chromatic number.
+        Returns approximation of the chromatic number using the greedy algorithm.
+        Also known as Random Sequential.
         """
-        return NotImplemented 
+        return NotImplemented
+
+        #Calling convention: either G.color_greedy or G.color_RS, same thing.
+        color_RS = color_greedy
          
     def color_SL(self) -> int:
         """
@@ -129,3 +133,6 @@ class SimpleGraphAdj(GraphAdj):
         """ 
         return NotImplemented
    
+
+
+
