@@ -40,7 +40,8 @@ def test_add_vertex():
     # row-wise assertion
     assert (newGraph.adjMatrix[4, :] == np.zeros((1, 5))).all()
     # assert the old matrix is unchanged 
-    # TODO:    
+    # TODO:
+        
 
 
 #

@@ -178,6 +178,8 @@ class GraphAdj:
         else:
               raise KeyError(f"Edge {edge} doesn't exist.")
     
+
+
     """
     Cycle counting, n-Walks...
     """
@@ -221,6 +223,12 @@ class GraphAdj:
         else:
             return self.adjMatrix.sum() // 2
 
+    def count_vertexes(self)-> int:
+        """
+        Returns the amount # of vertex in a graph.
+        """
+        return self.adjMatrix.shape(0)
+        
     
     def get_deg(self, vertex: str)-> int:
         """

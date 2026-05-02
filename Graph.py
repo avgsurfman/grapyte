@@ -129,6 +129,7 @@ class Graph:
         if not self.directed:
             self.adjList[b].remove(a)
 
+
     def to_GraphAdj(self):
         """
         Convert the Graph into GraphAdj.
@@ -139,6 +140,7 @@ class Graph:
         import grapyte.GraphAdj as GraphAdj
         return GraphAdj.from_Graph(self.adjList, self.name)
         
+
     @classmethod
     def from_GraphAdj(cls, matrix, itv, vti, directed):
         """ Creates an adjacency list based on the numpy array

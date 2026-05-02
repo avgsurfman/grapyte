@@ -1,3 +1,8 @@
+# CC Franciszek Moszczuk 2026
+
+import numpy as np
+import random
+
 class SimpleGraphAdj(GraphAdj):
     """
     Simple Matrix-based Unlooped, Undirected/directed graphs.
@@ -5,16 +10,46 @@ class SimpleGraphAdj(GraphAdj):
     """
     
     def __init__(self, vertex: set, edges: list = [], name = "Unnamed", adjList = None):
-        # disable directed matrices from the get-go
-        directed = False
-        # TODO: copy paste old constructor.
+        
+        #super().__init__(vertex, edges, name, directed, adjList)
+        
+        self.directed = False
+        self.name = name
+        
+        if array is None:
+            # sort set
+            # Assumes strings.
+            templist = sorted(vertex)
+             
+            # technically those two should be linked somehow but they arent
+            # THIS SHOULD BE A SEPARATE CLASS!!! CAN AND WILL GET DESYNCED
+            self.IndexToVertex = {}
+            self.VertexToIndex = {}
+            for index, key in enumerate(templist):
+                self.IndexToVertex[index] = key
+                self.VertexToIndex[key] = index
+
+            # create a numpy array of the size dict
+            a = len(self.VertexToIndex)
+            self.adjMatrix = np.zeros((a, a), dtype=np.int_)
+            # convert each edge to adjacency matrix
+            for u, v in edges:
+                try:
+                    if (u != v):
+                        # avoids loops
+                        self.adjMatrix[self.VertexToIndex[v], self.VertexToIndex[u]] += 1
+                        self.adjMatrix[self.VertexToIndex[u], self.VertexToIndex[v]] += 1
+                    else: 
+                        print(f"Loop detected, skipping...")
+                except KeyError as err:
+                    raise KeyError(f"Vertex {u} or {v} is missing from set: {vertex}") from err
+        else: 
+            self.adjMatrix = array
+            self.VertexToIndex = vti
+            self.IndexToVertex = itv
+           
         # TODO: Override some methods that are faster for simple graphs.
- 
-        super().__init__(vertex, edges, name, directed, adjList)
          
-        # post-parsing
-       
-        # what to do next...
     
 
     def get_annihilation(self)-> int:
@@ -78,7 +113,6 @@ class SimpleGraphAdj(GraphAdj):
         # create all deg combinations
         #degs = sorted([self.get_deg(v) for v in neighbors])
 
-    
      
     def get_p(self, vertex) -> int:
         """
@@ -109,17 +143,72 @@ class SimpleGraphAdj(GraphAdj):
     """
     Coloring
     """    
-
  
     def color_greedy(self) -> int:
         """
         Returns approximation of the chromatic number using the greedy algorithm.
         Also known as Random Sequential.
+        c is bounded by the Grundy number.
+
+        More info: 
+        https://people.cs.uchicago.edu/~laci/HANDOUTS/greedycoloring.pdf
         """
-        return NotImplemented
+        # alf
+                       
+        #ran[V
+        
+        # color(num# vertex) -> int
+        coloring = dict() 
+        # shuffle indexes (improves coloring a bit)
+        # pi -> {v2, v4, ...} [Borowiecki] 
+
+        # Initial coloring num
+        c = 0
+        for v in rand_list:
+            adj_colors = []
+            # numpy iterator for convenience
+            neighbors = np.diter(self.adjMatrix[v], flags=['f_index', 'external_loop'])
+            for neighbor in neighbors:
+                # an edge actually exists
+                if neighbor > 0:
+                   # 1) neighbor is colored
+                   print(neighbor, neigbors.index)
+                   if neighbor.index in coloring:
+                      adj_colors.append(coloring[neighbor.index])
+                       
+                   # 2) else neighbor is uncolored
+                   # (Do nothing)
+            
+            k = 0
+            while k in adj_colors:
+                k += 1
+            coloring[v] = k
+            if k > c:
+               c = k 
+        return c
 
         #Calling convention: either G.color_greedy or G.color_RS, same thing.
-        color_RS = color_greedy
+    color_RS = color_greedy
+
+
+
+    def color_greedy_exp(self) -> int:
+        """
+        Experimental Greedy backtrace BFS-like algorithm.
+        """
+        
+        coloring = dict()
+        rand_list = list(self.IndexToVertex)
+        
+        # if there's uncolored vertex v in G
+        #     for every u adj to v
+        #         for every z adj to u
+        #             color u
+        #     color v
+        # skip colored (empty bucket -> remove colored from set)
+
+
+
          
     def color_SL(self) -> int:
         """
@@ -132,7 +221,27 @@ class SimpleGraphAdj(GraphAdj):
         Returns the Largest-first coloring approximation of the chromatic number.
         """ 
         return NotImplemented
+
+    def color_SLF(self) -> int:
+        """
+        Brélaz (1979) DSATUR algorithm.
+        https://doi.org/10.1145%2F359094.359101
+        """
+        return NotImplemented
+    color_DSTATUR = color_SLF
    
+    
+    """
+    AAAAAAH Search Algorithms.
+    TODO: Implement for both adj and list.
+    """
 
-
-
+    def search_DFS(self) -> list:
+        """
+        DFS  
+        """
+        search_stack = []
+         
+        def search():
+            pass
+        return NotImplemented 
