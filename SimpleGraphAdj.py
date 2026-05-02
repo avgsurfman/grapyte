@@ -99,19 +99,10 @@ class SimpleGraphAdj(GraphAdj):
         Usecase:
            P(G) + 1 is a good upper bound approximation of the chromatic number.
         """
-        # Overall algorithm:
-        # 1)See what v connects to; O(n) 
-        # 2)Get deg for each neighbor (selective sum of each arr row) O(N)
-        # 3)Do the while loop where you increase the pv 
-        # 4) searchsorted through the results for each pv 
-        # OPT: Use threading 
-        # some of the code will go to pv
-
-        # new algo:
-        # get all sums for each row matrix, equivalent to getting all degs of a graph
-        # sort the degs
-        # create all deg combinations
-        #degs = sorted([self.get_deg(v) for v in neighbors])
+        
+        degs = sorted([self.get_deg(v) for v in self.IndexToVertex])
+        return max(degs)
+            
 
      
     def get_p(self, vertex) -> int:
@@ -122,12 +113,9 @@ class SimpleGraphAdj(GraphAdj):
         # neighbors : apply a function s.t:
         # f(x) { sum(j) if arr[i][j] = 1
         #      { null  otherwise
-        # then, to get potential, apply f(x) to the whole matrix,
+        # then, to get potential, apply f(x) to the whole matrix, then
         # p(v) = k where k is the number of increments
         # neighbors = np.fromiter(self.itv f)
-        # get all the neighbors, get their degrees
-        # THIS BEGS FOR A HEURESTIC, hoping numpy is somewhat fast
-        # Can be O(n)/O(n^2) depending on the implementation 
         iterable =  (self.adjMatrix[j].sum() for j in self.adjMatrix[i] if j > 0)
         neighbors = sorted(np.array(fromiter(iterable), int)) 
         max_p = 1
@@ -161,6 +149,7 @@ class SimpleGraphAdj(GraphAdj):
         coloring = dict() 
         # shuffle indexes (improves coloring a bit)
         # pi -> {v2, v4, ...} [Borowiecki] 
+        rand_list = random.shuffle(list(self.IndexToVertex))
 
         # Initial coloring num
         c = 0
@@ -180,33 +169,36 @@ class SimpleGraphAdj(GraphAdj):
                    # (Do nothing)
             
             k = 0
+            # slow, probably can be improved
             while k in adj_colors:
                 k += 1
             coloring[v] = k
             if k > c:
-               c = k 
+               c = k
+        print(coloring) 
         return c
 
-        #Calling convention: either G.color_greedy or G.color_RS, same thing.
+        #Calling convention: either G.color_greedy() or G.color_RS(), same thing.
     color_RS = color_greedy
 
 
 
     def color_greedy_exp(self) -> int:
         """
-        Experimental Greedy backtrace BFS-like algorithm.
+        Experimental Greedy variation, backtraces one layer back to color
+        the vertex.
         """
         
         coloring = dict()
         rand_list = list(self.IndexToVertex)
-        
+        c = 0 
         # if there's uncolored vertex v in G
         #     for every u adj to v
         #         for every z adj to u
         #             color u
         #     color v
         # skip colored (empty bucket -> remove colored from set)
-
+        return c
 
 
          
