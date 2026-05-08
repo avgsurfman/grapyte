@@ -2,6 +2,7 @@
 
 import numpy as np
 import random
+import grapyte.GraphAdj as GraphAdj
 
 class SimpleGraphAdj(GraphAdj):
     """
@@ -9,11 +10,13 @@ class SimpleGraphAdj(GraphAdj):
     Should be called a SG (akin to Directed Acyclic Graph).
     """
     
-    def __init__(self, vertex: set, edges: list = [], name = "Unnamed", adjList = None):
+    def __init__(self, vertex: set = None, edges: list = None, name = "Unnamed", 
+                 array = None, vti = None, itv = None, directed = False):
         
-        #super().__init__(vertex, edges, name, directed, adjList)
-        
-        self.directed = False
+        # directed has to be featured because SGA inherits the cls method
+        # which also means it should be overridden and
+        # I am not rewriting that fucking class method 
+        self.directed = False #cockblock
         self.name = name
         
         if array is None:
@@ -44,11 +47,40 @@ class SimpleGraphAdj(GraphAdj):
                 except KeyError as err:
                     raise KeyError(f"Vertex {u} or {v} is missing from set: {vertex}") from err
         else: 
+            #TODO: typecheck the array.
             self.adjMatrix = array
             self.VertexToIndex = vti
             self.IndexToVertex = itv
            
         # TODO: Override some methods that are faster for simple graphs.
+
+
+    """
+    Overloaded methods.
+    """
+
+    def add_edge(self, edge: tuple):
+        """
+        Adds an edge. Checks whether the edge is valid, then inserts.
+        Does not allow duplicate edges.
+        """
+        # Check whether this is a tuple
+        if type(edge) is tuple:
+           # the above should have own method for clarity but this will do
+           a, b = edge
+           if a not in self.VertexToIndex or b not in self.VertexToIndex:
+              raise KeyError(f"{a} or {b} is not in the list of vertexes")
+           # check for duplicates
+           c, d = self.VertexToIndex[a], self.VertexToIndex[b]
+           if self.adjMatrix[c, d] >= 1:
+              raise ValueError(f"Duplicate edge: {c, d} or {d, c}")
+           else:
+              #if not self.directed:
+              self.adjMatrix[c, d] += 1
+              self.adjMatrix[d, c] += 1
+        else:
+           raise TypeError(f"Bad Type: Edge is a {edge}! Expected a tuple...")
+
          
     
 
@@ -100,7 +132,7 @@ class SimpleGraphAdj(GraphAdj):
            P(G) + 1 is a good upper bound approximation of the chromatic number.
         """
         
-        degs = sorted([self.get_deg(v) for v in self.IndexToVertex])
+        degs = sorted([self.get_p(v) for v in self.IndexToVertex])
         return max(degs)
             
 
@@ -132,7 +164,7 @@ class SimpleGraphAdj(GraphAdj):
     Coloring
     """    
  
-    def color_greedy(self) -> int:
+    def color_greedy(self, init_list = None) -> int:
         """
         Returns approximation of the chromatic number using the greedy algorithm.
         Also known as Random Sequential.
@@ -147,23 +179,29 @@ class SimpleGraphAdj(GraphAdj):
         
         # color(num# vertex) -> int
         coloring = dict() 
-        # shuffle indexes (improves coloring a bit)
-        # pi -> {v2, v4, ...} [Borowiecki] 
-        rand_list = random.shuffle(list(self.IndexToVertex))
+        if not init_list: 
+            # shuffle indexes (improves coloring a bit)
+            # pi -> {v2, v4, ...} [Borowiecki]
+            rand_list = list(self.IndexToVertex)
+            random.shuffle(rand_list)
+        else:
+            # Initialization list. Not type-checked.
+            rand_list = init_list
+        print(f"Randlist: {rand_list}")
 
         # Initial coloring num
         c = 0
         for v in rand_list:
             adj_colors = []
-            # numpy iterator for convenience
-            neighbors = np.diter(self.adjMatrix[v], flags=['f_index', 'external_loop'])
+            # numpy iterator for convenience (external_loop doesn't work)
+            neighbors = np.nditer(self.adjMatrix[v], flags=['f_index'])
             for neighbor in neighbors:
                 # an edge actually exists
                 if neighbor > 0:
                    # 1) neighbor is colored
-                   print(neighbor, neigbors.index)
-                   if neighbor.index in coloring:
-                      adj_colors.append(coloring[neighbor.index])
+                   print(f"Found an edge! {neighbors.index}")
+                   if neighbors.index in coloring:
+                      adj_colors.append(coloring[neighbors.index])
                        
                    # 2) else neighbor is uncolored
                    # (Do nothing)
@@ -175,8 +213,9 @@ class SimpleGraphAdj(GraphAdj):
             coloring[v] = k
             if k > c:
                c = k
-        print(coloring) 
-        return c
+            print(coloring) 
+        # reindexing as colors go from 0 to χ-1
+        return c+1
 
         #Calling convention: either G.color_greedy() or G.color_RS(), same thing.
     color_RS = color_greedy
@@ -190,9 +229,19 @@ class SimpleGraphAdj(GraphAdj):
         """
         
         coloring = dict()
-        rand_list = list(self.IndexToVertex)
+        bucket = random.shuffle(list(self.IndexToVertex))
+        
         c = 0 
         # if there's uncolored vertex v in G
+        while item in bucket:
+            # row_wise
+            neighbors = np.nditer(self.adjMatrix[item], flags=['multi_index'])
+            for neighbors in self.adjMatrix[item]:
+                # column_wise
+                for neighbor in neighbors:
+                    continue
+                    # copy the coloring code.
+                     
         #     for every u adj to v
         #         for every z adj to u
         #             color u
@@ -201,18 +250,20 @@ class SimpleGraphAdj(GraphAdj):
         return c
 
 
+    def color_LF(self) -> int:
+        """
+        Returns the Largest-first coloring approximation of the chromatic number.
+        Essentially greedy but with some ordering.
+        """ 
+        return NotImplemented
          
+
     def color_SL(self) -> int:
         """
         Returns the Smallest Last coloring approximation of the chromatic number.
         """
         return NotImplemented
 
-    def color_LF(self) -> int:
-        """
-        Returns the Largest-first coloring approximation of the chromatic number.
-        """ 
-        return NotImplemented
 
     def color_SLF(self) -> int:
         """
