@@ -221,13 +221,13 @@ class SimpleGraphAdj(GraphAdj):
     color_RS = color_greedy
 
 
-
     def color_greedy_exp(self) -> int:
         """
         Experimental Greedy variation, backtraces one layer back to color
         the vertex.
         """
-        
+        # TODO: FIX
+ 
         coloring = dict()
         bucket = random.shuffle(list(self.IndexToVertex))
         
@@ -236,31 +236,56 @@ class SimpleGraphAdj(GraphAdj):
         while item in bucket:
             # row_wise
             neighbors = np.nditer(self.adjMatrix[item], flags=['multi_index'])
-            for neighbors in self.adjMatrix[item]:
-                # column_wise
-                for neighbor in neighbors:
-                    continue
-                    # copy the coloring code.
-                     
+            for neighbor in neighbors:
+                # If there's a neighbor, check neighbor's neighbors
+                if neighbor > 0:
+                    adj_colors = []
+                    # Column-wise iteration over the neighbor
+                    print(f"Multi-index: {neighbors.multi_index[0], neighbors.multi_index[1]}")
+                    # Evil fucking double iter
+                    evil_iter = np.nditer(self.adjMatrix[neighbors.multi_index[1]], flags=['f_index'])
+                    v = neighbors.multi_index[1]
+                    for neighbor_of_neighbor in evil_iter:
+                        if neighbor_of_neighbor > 0 and neighbor_of_neighbor.index in coloring:
+                           adj_colors.append(coloring[neighbor_of_neighbor.index])
+                    k = 0
+                    while k in adj_colors:
+                        k += 1
+                    coloring[v] = k
+                    # delete v from bucket once colored 
+                    bucket.remove(v)
+                    if k > c:
+                       c = k
+            # do the same for the central vertex
+  
         #     for every u adj to v
         #         for every z adj to u
         #             color u
         #     color v
         # skip colored (empty bucket -> remove colored from set)
-        return c
+        return c + 1
 
 
     def color_LF(self) -> int:
         """
         Returns the Largest-first coloring approximation of the chromatic number.
-        Essentially greedy but with some ordering.
+        Essentially greedy but with some ordering based on degrees.
+        Let π be an ordering of Vertexes of Graph V = {V_1 ... V_n}.
+        
+        RS (Random Sequential) summons a random order.
+        LF returns the ordering s.t {deg(v_i) >= deg(v_i+1)}.
         """ 
-        return NotImplemented
+        degs_dict = {get_deg(vertex):vertex for vertex in self.VertexToIndex}
+        LF = list(sorted(degs_dict.values(), reverse=True))
+        # χ  
+        c = self.color_greedy(init_list=LF)
+        return c 
          
 
     def color_SL(self) -> int:
         """
         Returns the Smallest Last coloring approximation of the chromatic number.
+        This, surprisingly, is also greedy. 
         """
         return NotImplemented
 
@@ -269,6 +294,8 @@ class SimpleGraphAdj(GraphAdj):
         """
         Brélaz (1979) DSATUR algorithm.
         https://doi.org/10.1145%2F359094.359101
+
+        Oops! All Greedy!
         """
         return NotImplemented
     color_DSTATUR = color_SLF
@@ -276,7 +303,7 @@ class SimpleGraphAdj(GraphAdj):
     
     """
     AAAAAAH Search Algorithms.
-    TODO: Implement for both adj and list.
+    TODO: Implement for both adj Matrix and List.
     """
 
     def search_DFS(self) -> list:
