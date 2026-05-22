@@ -15,7 +15,7 @@ def test_create_GraphAdj():
     # d 0 0 0 0
     print(newGraph)
     retArr = np.array([[0, 2, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])
-    assert(GraphAdj.adjMatrix == retArr).all()
+    assert(newGraph.adjMatrix == retArr).all()
     
 
 def test_create_GraphAdj_error():

@@ -226,25 +226,29 @@ class SimpleGraphAdj(GraphAdj):
         Experimental Greedy variation, backtraces one layer back to color
         the vertex.
         """
-        # TODO: FIX
+        # TODO: Fix this unfixable dogshit
  
         coloring = dict()
-        bucket = random.shuffle(list(self.IndexToVertex))
-        
+        bucket = list(self.IndexToVertex)
+        random.shuffle(bucket)
+
         c = 0 
         # if there's uncolored vertex v in G
-        while item in bucket:
+        for item in bucket:
             # row_wise
-            neighbors = np.nditer(self.adjMatrix[item], flags=['multi_index'])
+            # todo: replace with enumerate
+            neighbors = np.ndenumerate(self.adjMatrix[item])
+            origin_adj_colors = []
+            
             for neighbor in neighbors:
                 # If there's a neighbor, check neighbor's neighbors
                 if neighbor > 0:
                     adj_colors = []
                     # Column-wise iteration over the neighbor
-                    print(f"Multi-index: {neighbors.multi_index[0], neighbors.multi_index[1]}")
+                    print(f"Multi-index: {neighbors.index[0], neighbors.index[1]}")
                     # Evil fucking double iter
-                    evil_iter = np.nditer(self.adjMatrix[neighbors.multi_index[1]], flags=['f_index'])
-                    v = neighbors.multi_index[1]
+                    evil_iter = np.nditer(self.adjMatrix[neighbors.index[1]], flags=['f_index'])
+                    v = neighbors.index[1]
                     for neighbor_of_neighbor in evil_iter:
                         if neighbor_of_neighbor > 0 and neighbor_of_neighbor.index in coloring:
                            adj_colors.append(coloring[neighbor_of_neighbor.index])
@@ -254,9 +258,21 @@ class SimpleGraphAdj(GraphAdj):
                     coloring[v] = k
                     # delete v from bucket once colored 
                     bucket.remove(v)
+                    # append to centerpiece
+                    origin_adj_colors.append(k)
+                    # update c
                     if k > c:
                        c = k
-            # do the same for the central vertex
+            # do the same for the central vertex (IF it's uncolored colored)
+            if item not in coloring:
+                k = 0
+                while k in origin_adj_colors:
+                    k += 1
+                coloring[item] = k
+                if k > c:
+                   c = k
+            else:
+                continue
   
         #     for every u adj to v
         #         for every z adj to u
@@ -297,6 +313,11 @@ class SimpleGraphAdj(GraphAdj):
 
         Oops! All Greedy!
         """
+        # while not uncolored: 
+        #     calculate_satur
+        #     choose the smallest vertex with satur
+        #     color with the smallest color available (simple loop from greedy)
+        # return c
         return NotImplemented
     color_DSTATUR = color_SLF
    
@@ -306,12 +327,67 @@ class SimpleGraphAdj(GraphAdj):
     TODO: Implement for both adj Matrix and List.
     """
 
-    def search_DFS(self) -> list:
+    def DFS(self):
         """
-        DFS  
+        Depth-first search. Returns the Search Tree as a new List/Matrix
         """
-        search_stack = []
+        def search_dfs(v):
+            """
+            Unlike in DFS for lists, v is the row index of the array, instead of a string.
+            """
+            print(f"search dfs {v}")
+            # PRE-VISIT
+            visited[v] = True
+            neighbors = np.nditer(self.adjMatrix[v], flags=['f_index'])
+            for neighbor in neighbors:
+                # if there's an edge at all
+                if neighbor:
+                    index = neighbors.index
+                    if visited[index] is False:
+                        print(f"{v} -> {index}")
+                        T[v].append(index)
+                        M[v, index] = 1 
+                        search_dfs(index)
+                # else do nothing
+        
+        # visited<vertex> -> bool
+        
+        # the sets have to be resorted because there is some fuckery 
+        # with type conversion from set to dict and the
+        # resulting dict stops being sorted
+        # the results are still valid but have different starting points.
+        # sorted makes the resulting trees somewhat predictable 
+        #
+        # this should return a Tree (or a DAG) type in the future
+        visited = {vertex:False for vertex in sorted(self.IndexToVertex.keys())}
+        
+        # easier to verify
+        T = {vertex:[] for vertex in sorted(self.IndexToVertex.keys())}        
+        a = len(self.IndexToVertex)
+        M = np.zeros((a, a), dtype=np.int_)
          
-        def search():
-            pass
-        return NotImplemented 
+        print(visited)  
+        for vertex, flag in visited.items():
+            print(f"Current vertex: {vertex}")
+            if not visited[vertex]: 
+               # find first unvisited root node
+               search_dfs(vertex)
+        print(T)
+        print(M) 
+        return M, T
+
+
+    def BFS(self):
+        """
+        Breadth-first search. Returns the Search Tree as both a new adjacency matrix,
+        as well as a list (to show the solutions)?
+        """
+        raise NotImplementedError("Not implemented yet")
+        return T
+
+    
+    #def isTree(self):
+    #    """
+    #    Is the graph a tree?
+    #    """
+    #    if 

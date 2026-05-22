@@ -16,3 +16,26 @@ def test_create_SimpleGraphAdj():
     # d 0 0 0 0
     print(newGraph)
     retArr = np.array([[0, 2, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]])
+
+
+def test_DFS_lecture():
+    """
+    test the dfs
+    """
+
+    G = SimpleGraph({"a", "b", "c", "d", "e", "f",
+                   "g", "h", "i", "j", "k", "l"},
+                   [("a", "b"), ("a", "e"), ("e", "i"),("e", "j"), ("i", "j"), 
+                   ("c", "d"), ("c", "h"), ("c", "g"), ("g", "h"), ("d", "h"),
+                   ("g", "k"), ("h", "k"), ("h", "l")])
+
+    test = G.DFS()
+    raise NotImplementedError("ahhhhh to do")
+    #print(test)
+    #assert(test) == {'a': ['b', 'e'], 'b': [], 'c': ['d'], 'd': ['h'], 'e': ['i'], 
+    #                 'f': [], 'g': ['k'], 'h': ['g', 'l'], 'i': ['j'], 'j': [], 
+    #                 'k': [], 'l': []}
+
+# TODO: multiple edge errors out (same vertex).
+# TODO: multiple edge errors out (opposite vertex)
+
