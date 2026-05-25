@@ -127,11 +127,6 @@ class SimpleGraph(Graph):
                         # add vertex to the current tree
                         T[vertex].append(u)
                         bfs_queue.append(u)
-                # The pseudocode seems to have an error here, 
-                # the original doesn't append the last vertex on exit...
-                if visited[vertex] is False:
-                    visited[u] = True
-                    T[v].append(vertex)
 
 
         visited = {vertex:False for vertex in sorted(self.vertex)}

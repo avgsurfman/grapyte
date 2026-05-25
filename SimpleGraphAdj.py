@@ -3,6 +3,7 @@
 import numpy as np
 import random
 import grapyte.GraphAdj as GraphAdj
+from collections import deque
 
 class SimpleGraphAdj(GraphAdj):
     """
@@ -345,24 +346,20 @@ class SimpleGraphAdj(GraphAdj):
                     index = neighbors.index
                     if visited[index] is False:
                         print(f"{v} -> {index}")
-                        T[v].append(index)
+                        #T[v].append(index)
                         M[v, index] = 1 
                         search_dfs(index)
                 # else do nothing
         
         # visited<vertex> -> bool
         
-        # the sets have to be resorted because there is some fuckery 
-        # with type conversion from set to dict and the
-        # resulting dict stops being sorted
-        # the results are still valid but have different starting points.
-        # sorted makes the resulting trees somewhat predictable 
-        #
+        # Thankfully we do not need to sort the ITV dict again like in the case
+        # of sets
         # this should return a Tree (or a DAG) type in the future
-        visited = {vertex:False for vertex in sorted(self.IndexToVertex.keys())}
+        visited = {vertex:False for vertex in self.IndexToVertex.keys()}
         
         # easier to verify
-        T = {vertex:[] for vertex in sorted(self.IndexToVertex.keys())}        
+        #T = {vertex:[] for vertex in sorted(self.IndexToVertex.keys())}        
         a = len(self.IndexToVertex)
         M = np.zeros((a, a), dtype=np.int_)
          
@@ -372,9 +369,9 @@ class SimpleGraphAdj(GraphAdj):
             if not visited[vertex]: 
                # find first unvisited root node
                search_dfs(vertex)
-        print(T)
+        #print(T)
         print(M) 
-        return M, T
+        return M
 
 
     def BFS(self):
@@ -382,8 +379,38 @@ class SimpleGraphAdj(GraphAdj):
         Breadth-first search. Returns the Search Tree as both a new adjacency matrix,
         as well as a list (to show the solutions)?
         """
-        raise NotImplementedError("Not implemented yet")
-        return T
+        def search_bfs(v):
+            visited[v] = True
+            bfs_queue = deque(v)
+            # print(f"bfs called: {bfs_queue}")
+            # dequeue and iterate over child nodes
+            while bfs_queue:
+                #print(f"Current queue: {bfs_queue}")
+                vertex = bfs_queue.popleft()
+                neighbors = np.nditer(self.adjMatrix[vertex], flags=['f_index'])
+                for neighbor in neighbors:
+                    if neighbor:
+                        index = neighbors.index
+                        print(f"u {index} in neighborhood of {vertex}...")
+                        if visited[index] is False:
+                            visited[u] = True
+                            # add vertex to the current tree
+                            M[vertex, index] = 1
+                            bfs_queue.append(u)
+
+
+        visited = {vertex:False for vertex in self.IndexToVertex.keys()}
+        a = len(self.IndexToVertex)
+        M = np.zeros((a, a), dtype=np.int_)
+         
+        print(visited)  
+        for vertex, flag in visited.items():
+            #print(f"Current vertex: {vertex}")
+            if not visited[vertex]: 
+               # find first unvisited root node
+               search_bfs(vertex)
+         
+        return M
 
     
     #def isTree(self):
