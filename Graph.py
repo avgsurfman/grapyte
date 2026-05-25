@@ -117,7 +117,7 @@ class Graph:
                 self.adjList[b].append(a)
         
         else:
-           raise TypeError(f"Bad Type: {edge} is", edge)
+           raise TypeError(f"Bad Type: {edge} is", type(edge))
 
 
     def remove_edge(self, edge: tuple):
@@ -167,13 +167,14 @@ class Graph:
         """ If path is none returns a string, or writes to file
         the graph in graph6 format"""
 
-        return NotImplemented("Please convert to AdjMatrix to read/write graph6.")
+        raise NotImplementedError("Please convert to AdjMatrix to read/write graph6.")
 
 
     @classmethod
     def from_graph6(self):
         """ Alternative constructor for reading graph6."""
-        return NotImplemented
+
+        raise NotImplementedError("Please convert to AdjMatrix to read/write graph6.")
      
 
 

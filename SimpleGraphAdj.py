@@ -11,9 +11,14 @@ class SimpleGraphAdj(GraphAdj):
     Should be called a SG (akin to Directed Acyclic Graph).
     """
     
-    def __init__(self, vertex: set = None, edges: list = None, name = "Unnamed", 
-                 array = None, vti = None, itv = None, directed = False):
-        
+    def __init__(self, 
+                 vertex: set[str] | None = None, 
+                 edges: list[tuple[str, str]] | None = None, 
+                 name: "Name of the graph" = "Unnamed", 
+                 array = None, vti = None, itv = None, 
+                 directed: bool = False):
+
+        # TODO: improve type hints
         # directed has to be featured because SGA inherits the cls method
         # which also means it should be overridden and
         # I am not rewriting that fucking class method 
@@ -60,7 +65,7 @@ class SimpleGraphAdj(GraphAdj):
     Overloaded methods.
     """
 
-    def add_edge(self, edge: tuple):
+    def add_edge(self, edge: tuple[str, str]):
         """
         Adds an edge. Checks whether the edge is valid, then inserts.
         Does not allow duplicate edges.
@@ -110,14 +115,21 @@ class SimpleGraphAdj(GraphAdj):
         return int(np.searchsorted(np.cumsum(degs), edges, side='right'))
         """
 
-    def get_deg(self, vertex: str)-> int:
+    def get_deg(self, vertex: str | int)-> int:
         """
         Gets the degree deg(v) of a vertex.
+        Also is the reason why we require Python 3.10+.
+        https://peps.python.org/pep-0604/
         """
         # Loops v -> v are counted twice, 2*a+b+c... = sum(row) + a
-        # Simple graphs don't have loops idiot 
-        pos = self.VertexToIndex[vertex]
-        return self.adjMatrix[pos].sum() 
+        # Simple graphs don't have loops idiot
+        if isinstance(vertex, str): 
+            pos = self.VertexToIndex[vertex]
+            return self.adjMatrix[pos].sum() 
+        elif isinstance(vertex, int):
+            return self.adjMatrix[vertex].sum()
+        else:
+            raise TypeError(f"get_deg requires an int | str, not {type(vertex)}") 
 
 
     def get_H(self) -> int:
@@ -138,7 +150,7 @@ class SimpleGraphAdj(GraphAdj):
             
 
      
-    def get_p(self, vertex) -> int:
+    def get_p(self, vertex: str) -> int:
         """
         Return the potential of a vertex p(v). 
         """
@@ -174,9 +186,6 @@ class SimpleGraphAdj(GraphAdj):
         More info: 
         https://people.cs.uchicago.edu/~laci/HANDOUTS/greedycoloring.pdf
         """
-        # alf
-                       
-        #ran[V
         
         # color(num# vertex) -> int
         coloring = dict() 
@@ -185,10 +194,12 @@ class SimpleGraphAdj(GraphAdj):
             # pi -> {v2, v4, ...} [Borowiecki]
             rand_list = list(self.IndexToVertex)
             random.shuffle(rand_list)
+            print(f"Randlist: {rand_list}")
         else:
             # Initialization list. Not type-checked.
+            # Consists of indicies from ITV.
             rand_list = init_list
-        print(f"Randlist: {rand_list}")
+            print(f"Randlist provided: {rand_list}")
 
         # Initial coloring num
         c = 0
@@ -292,10 +303,11 @@ class SimpleGraphAdj(GraphAdj):
         RS (Random Sequential) summons a random order.
         LF returns the ordering s.t {deg(v_i) >= deg(v_i+1)}.
         """ 
-        degs_dict = {get_deg(vertex):vertex for vertex in self.VertexToIndex}
-        LF = list(sorted(degs_dict.values(), reverse=True))
+        degs_dict = {vertex: self.get_deg(vertex) for vertex in self.IndexToVertex}
+        LF = dict(sorted(degs_dict.items(), reverse=True, key=lambda item: item[1]))
+        # print(LF)
         # χ  
-        c = self.color_greedy(init_list=LF)
+        c = self.color_greedy(init_list=list(LF))
         return c 
          
 
@@ -381,7 +393,7 @@ class SimpleGraphAdj(GraphAdj):
         """
         def search_bfs(v):
             visited[v] = True
-            bfs_queue = deque(v)
+            bfs_queue = deque([v])
             # print(f"bfs called: {bfs_queue}")
             # dequeue and iterate over child nodes
             while bfs_queue:
@@ -391,12 +403,13 @@ class SimpleGraphAdj(GraphAdj):
                 for neighbor in neighbors:
                     if neighbor:
                         index = neighbors.index
-                        print(f"u {index} in neighborhood of {vertex}...")
+                        print(f"u:{self.IndexToVertex[index]} (index {index}) in neighborhood of \
+{self.IndexToVertex[vertex]}(index {vertex}...")
                         if visited[index] is False:
-                            visited[u] = True
+                            visited[index] = True
                             # add vertex to the current tree
                             M[vertex, index] = 1
-                            bfs_queue.append(u)
+                            bfs_queue.append(index)
 
 
         visited = {vertex:False for vertex in self.IndexToVertex.keys()}

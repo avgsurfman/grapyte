@@ -33,7 +33,7 @@ def test_SimpleGraph_loop_detection():
  
 def test_SimpleGraph_duplicate_detection():
    """
-   Test whether loop detection works.
+   Test whether duplicate detection works.
    """
    with pytest.raises(ValueError):
         G = SimpleGraph({"a", "b", "c", "d"}, [("a", "b"), ("a", "b")])

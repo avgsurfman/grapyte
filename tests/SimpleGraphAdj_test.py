@@ -23,7 +23,7 @@ def test_DFS_lecture():
     test the dfs
     """
 
-    G = SimpleGraph({"a", "b", "c", "d", "e", "f",
+    G = SimpleGraphAdj({"a", "b", "c", "d", "e", "f",
                    "g", "h", "i", "j", "k", "l"},
                    [("a", "b"), ("a", "e"), ("e", "i"),("e", "j"), ("i", "j"), 
                    ("c", "d"), ("c", "h"), ("c", "g"), ("g", "h"), ("d", "h"),

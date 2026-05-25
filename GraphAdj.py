@@ -229,18 +229,24 @@ class GraphAdj:
         """
         return self.adjMatrix.shape(0)
         
-    
-    def get_deg(self, vertex: str)-> int:
+
+    def get_deg(self, vertex: str | int)-> int:
         """
-        Gets the degree of a vertex.
+        Gets the degree deg(v) of a vertex.
+        Also is the reason why we require Python 3.10+.
+        https://peps.python.org/pep-0604/
         """
-        # Loops v -> v are counted twice
+        # Loops v -> v are counted twice, 
         # therefore 2*a+b+c... = sum(row) + a
-        pos = self.VertexToIndex[vertex]
-        # row sum + a
-        return self.adjMatrix[pos].sum() + self.adjMatrix[pos, pos]
-        
+        if isinstance(vertex, str): 
+            pos = self.VertexToIndex[vertex]
+            return self.adjMatrix[pos].sum() + self.adjMatrix[pos, pos] 
+        elif isinstance(vertex, int):
+            return self.adjMatrix[vertex].sum()
+        else:
+            raise TypeError(f"get_deg requires an int | str, not {type(vertex)}") 
     
+
     #def get_max_deg_numpy(self) -> int:
     #    """
     #    Returns the maximum degree of a graph, s.t.
