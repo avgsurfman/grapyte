@@ -187,7 +187,24 @@ class SimpleGraphAdj(GraphAdj):
                 neighbor_max = neighbor
         
         return max_p
-           
+
+
+    def get_chromatic_upper_bound(self):
+        """
+        Gets the upper chromatic upper bound with sqrt(2*m) + 1.
+        """
+        return np.sqrt(2*self.count_vertex()) + 1   
+
+
+    def get_chromatic_lower_bound(self):
+        """
+        Gets the lower chromatic upper bound with n^2/(n^2 - 2*m)
+        """   
+        # ISTG this method SUCKS and will sooner or later make me cry 
+        # TODO: Chopping block: len(self.IndexToVertex * 3
+        # TODO: Chopping block: len(self.VertexToIndex
+        n = len(self.IndexToVertex)
+        return n**2/(n**2 - 2*self.count_vertex())
 
     """
     Setters 
@@ -337,12 +354,12 @@ class SimpleGraphAdj(GraphAdj):
             # pi -> {v2, v4, ...} [Borowiecki]
             rand_list = list(self.IndexToVertex)
             random.shuffle(rand_list)
-            print(f"Randlist: {rand_list}")
+            # print(f"Randlist: {rand_list}")
         else:
             # Initialization list. Not type-checked.
             # Consists of indicies from ITV.
             rand_list = init_list
-            print(f"Randlist provided: {rand_list}")
+            # print(f"Randlist provided: {rand_list}")
 
         # Initial coloring num
         c = 0
@@ -352,9 +369,10 @@ class SimpleGraphAdj(GraphAdj):
             neighbors = np.nditer(self.adjMatrix[v], flags=['f_index'])
             for neighbor in neighbors:
                 # an edge actually exists
+                # could be improved with np.nonzero instead
                 if neighbor > 0:
                    # 1) neighbor is colored
-                   print(f"Found an edge! {neighbors.index}")
+                   # print(f"Found an edge! {neighbors.index}")
                    if neighbors.index in coloring:
                       adj_colors.append(coloring[neighbors.index])
                        
@@ -381,38 +399,45 @@ class SimpleGraphAdj(GraphAdj):
         Experimental Greedy variation, backtraces one layer back to color
         the vertex.
         """
-        # TODO: Fix this unfixable dogshit
+        # TODO: Fix this unfixable fucking dogshit JESUS CHRIST
  
         coloring = dict()
         bucket = list(self.IndexToVertex)
-        random.shuffle(bucket)
 
         c = 0 
         # if there's uncolored vertex v in G
-        for item in bucket:
-            # row_wise
-            # todo: replace with enumerate
-            neighbors = np.ndenumerate(self.adjMatrix[item])
+        while bucket:
+            # take item from bucket
+            item = random.choice(bucket)
+              
+            # returns the indicies
+            neighbors = np.nonzero(self.adjMatrix[item])[0]
             origin_adj_colors = []
             
             for neighbor in neighbors:
-                # If there's a neighbor, check neighbor's neighbors
-                if neighbor > 0:
+                # skip the central
+                if neighbor == item:
+                    continue
+                elif neighbor in coloring:
+                    continue
+                else:
                     adj_colors = []
                     # Column-wise iteration over the neighbor
-                    print(f"Multi-index: {neighbors.index[0], neighbors.index[1]}")
+                    print(f"Multi-index: {neighbor, neighbors}")
                     # Evil fucking double iter
-                    evil_iter = np.nditer(self.adjMatrix[neighbors.index[1]], flags=['f_index'])
-                    v = neighbors.index[1]
+                    evil_iter = np.nonzero(self.adjMatrix[neighbor])[0]
                     for neighbor_of_neighbor in evil_iter:
-                        if neighbor_of_neighbor > 0 and neighbor_of_neighbor.index in coloring:
-                           adj_colors.append(coloring[neighbor_of_neighbor.index])
+                        print(f"Current neighbor2nd: {neighbor_of_neighbor}")
+                        if neighbor_of_neighbor in coloring:
+                           adj_colors.append(coloring[neighbor_of_neighbor])
+                           print(f"Colors: {adj_colors}")
                     k = 0
                     while k in adj_colors:
                         k += 1
-                    coloring[v] = k
+                    coloring[neighbor] = k
                     # delete v from bucket once colored 
-                    bucket.remove(v)
+                    bucket.remove(neighbor)
+                    print(f"color bucket : {bucket}")
                     # append to centerpiece
                     origin_adj_colors.append(k)
                     # update c
@@ -424,11 +449,14 @@ class SimpleGraphAdj(GraphAdj):
                 while k in origin_adj_colors:
                     k += 1
                 coloring[item] = k
+                # delete v from bucket once colored 
+                bucket.remove(item)
+                print(f"Outside color bucket: {bucket}")
                 if k > c:
                    c = k
             else:
                 continue
-  
+        print(f"Final coloring: {coloring}") 
         #     for every u adj to v
         #         for every z adj to u
         #             color u
@@ -445,6 +473,9 @@ class SimpleGraphAdj(GraphAdj):
         
         RS (Random Sequential) summons a random order.
         LF returns the ordering s.t {deg(v_i) >= deg(v_i+1)}.
+
+        Originally developed by [Welsh and Powell 1967], thus also the name
+        (Welsh Powell Algorithm (WP) 
         """ 
         degs_dict = {vertex: self.get_deg(vertex) for vertex in self.IndexToVertex}
         LF = dict(sorted(degs_dict.items(), reverse=True, key=lambda item: item[1]))
@@ -452,19 +483,45 @@ class SimpleGraphAdj(GraphAdj):
         # χ  
         c = self.color_greedy(init_list=list(LF))
         return c 
+    color_WP = color_LF
          
 
     def color_SL(self) -> int:
         """
         Returns the Smallest Last coloring approximation of the chromatic number.
         This, surprisingly, is also greedy. 
+        Originally developed by [Matula 1968], code is based on the COLPACK graph suite.
+        DOI 10.1145/0000000.0000000
         """
-        return NotImplemented
+        # There is also the opposite: forward_degree - used in Dynamic LF
+        # not to be confused with Distributed Largest First 
+        back_degree = {vertex: self.get_deg(vertex) for vertex in self.IndexToVertex}
+        SL = deque()
+
+        while back_degree:
+            # get min, reduce the array
+            smallest = min(back_degree, key=back_degree.get)
+            print(f"New smallest: {smallest}, {back_degree}")
+            SL.appendleft(smallest)
+            del back_degree[smallest]
+            neighbors = np.nonzero(self.adjMatrix[smallest])[0]
+            print(neighbors)
+            # decrease neighbors by one
+            for neighbor in neighbors:
+                try:
+                    back_degree[neighbor] -= 1
+                except KeyError:
+                    pass
+            print(f"Updated dict: {back_degree} and {SL}")
+
+        c = self.color_greedy(init_list=list(SL))
+        # χ  
+        return c
 
 
     def color_SLF(self) -> int:
         """
-        Brélaz (1979) DSATUR algorithm.
+        [Brélaz 1979] DSATUR algorithm.
         https://doi.org/10.1145%2F359094.359101
 
         Oops! All Greedy!
@@ -473,6 +530,7 @@ class SimpleGraphAdj(GraphAdj):
         #     calculate_satur
         #     choose the smallest vertex with satur
         #     color with the smallest color available (simple loop from greedy)
+        # χ  
         # return c
         return NotImplemented
     color_DSTATUR = color_SLF

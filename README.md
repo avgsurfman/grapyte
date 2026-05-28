@@ -27,8 +27,8 @@ Also there is a Latex document is you are interested in the spec, I guess...
 
 
 TODO:
-- ~~coloring: (bruteforce, LF, )~~ TODO: DSATUR, SL
-- draw graph without graphviz
+- DSTAUR
+- draw graph with tkinter
 - better testing w/ pytest
 - H-index(?!)
 - Operator overrides:
@@ -38,7 +38,7 @@ TODO:
 - multigraph can be converted to graph and vice verse
 - SG <-> G <-> GA <-> SAG
 - SG || SAG -> DAG (MATRIX)?
-- graph6 write-to
+- graph6, dimacs 2nd write-to
 
 ideas:
 https://spidermonkey.dev/blog/2025/10/28/iongraph-web.html
