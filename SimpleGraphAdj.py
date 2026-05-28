@@ -1,9 +1,18 @@
-# CC Franciszek Moszczuk 2026
+# CC FRANCISZEK MOSZCZUK 2026
+
+import io
+import random
+import re
+
+# required dep
+from collections import deque
+from functools import reduce
 
 import numpy as np
-import random
+
+# local imports
 import grapyte.GraphAdj as GraphAdj
-from collections import deque
+
 
 class SimpleGraphAdj(GraphAdj):
     """

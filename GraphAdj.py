@@ -1,8 +1,11 @@
-# required dep
-from functools import reduce
+# CC FRANCISZEK MOSZCZUK 2026
 
 import re
 import io
+
+# required dep
+from functools import reduce
+
 import numpy as np
 
 
