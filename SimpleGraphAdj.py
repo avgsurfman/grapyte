@@ -62,7 +62,7 @@ class SimpleGraphAdj(GraphAdj):
 
 
     """
-    Overloaded methods.
+    Overloaded methods. 
     """
 
     def add_edge(self, edge: tuple[str, str]):
@@ -88,7 +88,9 @@ class SimpleGraphAdj(GraphAdj):
            raise TypeError(f"Bad Type: Edge is a {edge}! Expected a tuple...")
 
          
-    
+    """
+    Getters
+    """
 
     def get_annihilation(self)-> int:
         """
@@ -136,7 +138,9 @@ class SimpleGraphAdj(GraphAdj):
         """
         Return the H index, the inverse of potential.
         """
+        return NotImplemented
     
+
     def get_P(self) -> int:
         """
         Return the Potential of the graph P(G).
@@ -172,7 +176,132 @@ class SimpleGraphAdj(GraphAdj):
                 neighbor_max = neighbor
         
         return max_p
-                
+           
+
+    """
+    Setters 
+    TODO:
+    """
+
+
+    """
+    from methods (g6, dimacs)
+    """
+
+    @classmethod 
+    def from_dimacs(cls, data: str = None, path="") -> np.ndarray:
+        """
+        Reads the DIMACS graph format.
+        Reads from path file first if present.
+        Path can be either a system path or a fd.
+        If both data and path are entry, throws a ValueError.
+        This one ensures that there's just one edge for each connection.
+        """
+        def read_fd(fd):
+            """
+            Helper routine that parses fd and pseuso-fd objects (stringio).
+            More Info:
+            https://lcs.ios.ac.cn/~caisw/Resource/about_DIMACS_graph_format.txt
+            """
+
+
+            # init the finite state machine states:
+            # start => 0 
+            # comment line => 1 (c)
+            # problem line => 2 (p)
+            # edge_line => 3    (e)
+            # entered can be seen as a factored out Moore FSM
+            # that just remembers whether a p line has occured
+            state = 0    
+            entered_problem = 0          
+  
+            """
+            Some preface is needed for this section:
+            1) Single letters (tokens) denote detectors.
+            2) This is a Mealy FSM, meaning the state and the inputs affect
+            the state.
+            3) This is a minimal DIMACS 2nd ed parse. x parameter description 
+            and v params are not supported, as I don't know how to draw graphs in GUI.
+            This also isn't 1st ed, 3rd ed or any other ed as the multigraph 
+            class doesn't support weighted edges, or nodes (n ID param).
+ 
+            Grammar for each regex:
+            - comment line is accepting the words: *c*. In other words,
+            comments can appear anywhere in the file.
+            - problem line is accepting words: !entered_problem & problem_line
+            - edge line is accepting words: p & edge_line OR e & edge_line
+            - Every other sequence gets an error
+            
+            # finish on file end on edge line or comment; 
+            # if not in acceptor state, throw 
+            # if the edges perl re capture doesn't match, also throw
+            """
+            comment_detector = re.compile("^c( |$)")
+            problem_detector = re.compile("^p edge (?P<n>[0-9]+) (?P<edges>[0-9]+)")
+            edge_detector = re.compile("^e (?P<u>[0-9]+) (?P<v>[0-9]+)")
+            
+            # Graph variables
+            n = 0
+            edges = 0
+            edges_cnt = 0
+            matrix = None
+            # always_ff@(posedge line) 
+
+            for line in fd:
+                # always_comb
+                if comment_detector.match(line):
+                    state = 1
+                elif (res := problem_detector.match(line)) and not entered_problem:
+                    state = 2 
+                    n = int(res['n']) 
+                    edges = int(res['edges'])
+                    # initialize the numpy array at this point
+                    matrix = np.zeros((n, n), dtype=np.int_)
+                elif (res := edge_detector.match(line)) and state:
+                    u = int(res['u']) - 1
+                    v = int(res['v']) - 1
+                    # Notice the = 1 (not += like in GraphAdj).
+                    matrix[u, v] = 1
+                    matrix[v, u] = 1
+                    edges_cnt += 1
+                else:
+                    raise ValueError(f"[DIMACS 2nd Parser] Unacceptable line: {line}")
+            # validation segment
+            if not len(matrix):
+               raise TypeError("[DIMACS 2nd Parser] Matrix is 'None'.")
+            elif edges != edges_cnt:
+               raise ValueError(f"[DIMACS 2nd Parser] Edges count mismatch!\
+\nPlease check the source file. \nEdges, edges_cnt: {edges, edges_cnt}")
+                                       
+            else:
+               return matrix, n
+
+
+        if path:
+            with open(path, encoding="ascii") as fd:
+                retArrd, n = read_fd(fd)
+                vti = {}
+                itv = {}
+                for i in range(n):
+                    lookup = str(i)
+                    vti[lookup] = i
+                    itv[i] = lookup
+                return cls(array=retArrd, itv=itv, vti=vti, directed=False)
+        elif data:
+            # convert data to a io stringio
+            string_buffer = io.StringIO(data)
+            retArrd,n  = read_fd(string_buffer)
+            vti = {}
+            itv = {}
+            for i in range(n):
+                lookup = str(i)
+                vti[lookup] = i
+                itv[i] = lookup
+            return cls(array=retArrd, itv=itv, vti=vti, directed=False)
+        else:
+            raise ValueError("[DIMACS 2nd Parser] No arguments were provided.")
+
+     
     """
     Coloring
     """    
