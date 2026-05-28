@@ -158,24 +158,26 @@ class SimpleGraphAdj(GraphAdj):
            P(G) + 1 is a good upper bound approximation of the chromatic number.
         """
         
-        degs = sorted([self.get_p(v) for v in self.IndexToVertex])
+        degs = sorted([self.get_p(v) for v in self.VertexToIndex])
         return max(degs)
             
 
-     
+    # MODS HE POSTED 'P
     def get_p(self, vertex: str) -> int:
         """
         Return the potential of a vertex p(v). 
         """
-        i = self.VertexToIndex(vertex)
+        i = self.VertexToIndex[vertex]
         # neighbors : apply a function s.t:
         # f(x) { sum(j) if arr[i][j] = 1
         #      { null  otherwise
         # then, to get potential, apply f(x) to the whole matrix, then
         # p(v) = k where k is the number of increments
         # neighbors = np.fromiter(self.itv f)
-        iterable =  (self.adjMatrix[j].sum() for j in self.adjMatrix[i] if j > 0)
-        neighbors = sorted(np.array(fromiter(iterable), int)) 
+        #print(f"Iterating over row {self.adjMatrix[i]}")
+        iterable =  (self.adjMatrix[j].sum() for j in np.nonzero(self.adjMatrix[i])[0])
+        neighbors = sorted(np.array(np.fromiter(iterable, int))) 
+        #print(neighbors)
         max_p = 1
         neighbor_max = neighbors[0]
 
@@ -270,9 +272,12 @@ class SimpleGraphAdj(GraphAdj):
                     u = int(res['u']) - 1
                     v = int(res['v']) - 1
                     # Notice the = 1 (not += like in GraphAdj).
-                    matrix[u, v] = 1
-                    matrix[v, u] = 1
-                    edges_cnt += 1
+                    if u != v:
+                        matrix[u, v] = 1
+                        matrix[v, u] = 1
+                        edges_cnt += 1
+                    else:
+                       raise ValueError(f"[DIMACS 2nd Parser] Node Loop detected {line}")
                 else:
                     raise ValueError(f"[DIMACS 2nd Parser] Unacceptable line: {line}")
             # validation segment
