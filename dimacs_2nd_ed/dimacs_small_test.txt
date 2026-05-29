@@ -1,0 +1,16 @@
+c File: dimacs_small_test.txt
+c
+c SOURCE: Franciszek Moszczuk (Franciszek.moszczuk@gmail.com)
+p edge 4 12
+e 1 2
+e 1 3
+e 1 4
+e 2 1
+e 2 3
+e 2 4
+e 3 1
+e 3 2
+e 3 4
+e 4 1
+e 4 2
+e 4 3

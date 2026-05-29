@@ -1,6 +1,6 @@
 """grapyte - New graph library."""
-__version__ = "0.0.4"
-__author__ = "franciszek moszczuk, karol mądraszek"
+__version__ = "0.0.5"
+__author__ = "Franciszek Moszczuk, Karol Mądraszek"
 package_name = "grapyte"
 
 __all__ = ['Graph', 'GraphAdj', 'GraphEdge', 'SimpleGraphAdj', 'SimpleGraph']

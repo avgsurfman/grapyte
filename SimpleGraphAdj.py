@@ -337,7 +337,7 @@ class SimpleGraphAdj(GraphAdj):
     Coloring
     """    
  
-    def color_greedy(self, init_list = None) -> int:
+    def color_greedy(self, init_list = None, return_coloring: bool = False) -> int:
         """
         Returns approximation of the chromatic number using the greedy algorithm.
         Also known as Random Sequential.
@@ -386,9 +386,13 @@ class SimpleGraphAdj(GraphAdj):
             coloring[v] = k
             if k > c:
                c = k
-            print(coloring) 
+            #print(coloring) 
         # reindexing as colors go from 0 to χ-1
-        return c+1
+        c = c+1
+        if return_coloring:
+           return c, coloring 
+        else:
+           return c
 
         #Calling convention: either G.color_greedy() or G.color_RS(), same thing.
     color_RS = color_greedy
@@ -423,21 +427,21 @@ class SimpleGraphAdj(GraphAdj):
                 else:
                     adj_colors = []
                     # Column-wise iteration over the neighbor
-                    print(f"Multi-index: {neighbor, neighbors}")
+                    #print(f"Multi-index: {neighbor, neighbors}")
                     # Evil fucking double iter
                     evil_iter = np.nonzero(self.adjMatrix[neighbor])[0]
                     for neighbor_of_neighbor in evil_iter:
-                        print(f"Current neighbor2nd: {neighbor_of_neighbor}")
+                        #print(f"Current neighbor2nd: {neighbor_of_neighbor}")
                         if neighbor_of_neighbor in coloring:
                            adj_colors.append(coloring[neighbor_of_neighbor])
-                           print(f"Colors: {adj_colors}")
+                           #print(f"Colors: {adj_colors}")
                     k = 0
                     while k in adj_colors:
                         k += 1
                     coloring[neighbor] = k
                     # delete v from bucket once colored 
                     bucket.remove(neighbor)
-                    print(f"color bucket : {bucket}")
+                    #print(f"color bucket : {bucket}")
                     # append to centerpiece
                     origin_adj_colors.append(k)
                     # update c
@@ -456,7 +460,7 @@ class SimpleGraphAdj(GraphAdj):
                    c = k
             else:
                 continue
-        print(f"Final coloring: {coloring}") 
+        #print(f"Final coloring: {coloring}") 
         #     for every u adj to v
         #         for every z adj to u
         #             color u
@@ -465,7 +469,7 @@ class SimpleGraphAdj(GraphAdj):
         return c + 1
 
 
-    def color_LF(self) -> int:
+    def color_LF(self, return_coloring: bool = False) -> int:
         """
         Returns the Largest-first coloring approximation of the chromatic number.
         Essentially greedy but with some ordering based on degrees.
@@ -481,12 +485,14 @@ class SimpleGraphAdj(GraphAdj):
         LF = dict(sorted(degs_dict.items(), reverse=True, key=lambda item: item[1]))
         # print(LF)
         # χ  
-        c = self.color_greedy(init_list=list(LF))
-        return c 
+        if return_coloring:
+           return self.color_greedy(init_list=list(LF), return_coloring=True)
+        else:
+           return self.color_greedy(init_list=list(LF))
     color_WP = color_LF
          
 
-    def color_SL(self) -> int:
+    def color_SL(self, return_coloring: bool = False) -> int:
         """
         Returns the Smallest Last coloring approximation of the chromatic number.
         This, surprisingly, is also greedy. 
@@ -501,22 +507,24 @@ class SimpleGraphAdj(GraphAdj):
         while back_degree:
             # get min, reduce the array
             smallest = min(back_degree, key=back_degree.get)
-            print(f"New smallest: {smallest}, {back_degree}")
+            #print(f"New smallest: {smallest}, {back_degree}")
             SL.appendleft(smallest)
             del back_degree[smallest]
             neighbors = np.nonzero(self.adjMatrix[smallest])[0]
-            print(neighbors)
+            #print(neighbors)
             # decrease neighbors by one
             for neighbor in neighbors:
                 try:
                     back_degree[neighbor] -= 1
                 except KeyError:
                     pass
-            print(f"Updated dict: {back_degree} and {SL}")
+            #print(f"Updated dict: {back_degree} and {SL}")
 
-        c = self.color_greedy(init_list=list(SL))
         # χ  
-        return c
+        if return_coloring:
+            return self.color_greedy(init_list=list(SL), return_coloring=True)
+        else:
+            return self.color_greedy(init_list=list(SL))
 
 
     def color_SLF(self) -> int:
