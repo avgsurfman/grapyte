@@ -548,7 +548,11 @@ class SimpleGraphAdj(GraphAdj):
     AAAAAAH Search Algorithms.
     TODO: Implement for both adj Matrix and List.
     """
-
+    # TODO: add params:
+    # depth
+    # d : int = None
+    # preorder, postorder display
+    # ASCII art
     def DFS(self):
         """
         Depth-first search. Returns the Search Tree as a new List/Matrix
@@ -638,5 +642,19 @@ class SimpleGraphAdj(GraphAdj):
     #def isTree(self):
     #    """
     #    Is the graph a tree?
+    #    Two criteria
+    #    NOT a forest
+    #    no vertex is disjoint from graph
+    #    |V| = E
+    #    orrrr via DFS
     #    """
     #    if 
+
+    #def cycles_from_vertex()
+    #    """
+    #    Get cycles from vertex with DFS.
+    #    """
+
+
+    #def is_acyclic()
+    #    Does acycic calculation

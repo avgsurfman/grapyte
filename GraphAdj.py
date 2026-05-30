@@ -409,11 +409,11 @@ class GraphAdj:
                   
              # bit array hacks
              payload = raw[offset:]
-             print(payload)
+             #print(payload)
              bits = np.unpackbits(payload[:, np.newaxis], axis=1, bitorder="big")
-             print(f"unpack bits: {bits}")
+             #print(f"unpack bits: {bits}")
              bits = bits[:, 2:].ravel()[:m]  # skip the first 2 bits of each 8 bits and then flatten
-             print(f"bit skip: {bits}")
+             #print(f"bit skip: {bits}")
 
              # uint8, this is bound to cause problems...
              A = np.zeros((n, n), dtype=np.uint8)
@@ -762,13 +762,14 @@ class GraphAdj:
 # print(newGraph)
 
 
+# TODO: move tests 
 # GRAPH6 TEST
-graph6 = GraphAdj.from_graph6("DQc")
-diff = GraphAdj.from_graph6("G}l~~{")
-print(diff)
+#graph6 = GraphAdj.from_graph6("DQc")
+#diff = GraphAdj.from_graph6("G}l~~{")
+#print(diff)
 
 # DIGRAPH6 Test
 
-digraph6 = GraphAdj.from_digraph6("&DI?AO?")
-print(digraph6)
+#digraph6 = GraphAdj.from_digraph6("&DI?AO?")
+#print(digraph6)
 # required dep

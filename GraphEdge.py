@@ -84,15 +84,15 @@ class GraphEdge:
         return GraphAdj(self.vertex, self.edges)
 
 
-newGraph = GraphEdge({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
-print(newGraph)
-newGraph.add_vertex("z")
-print(newGraph)
-newGraph.add_edge(("b", "z"))
-print(newGraph)
+#newGraph = GraphEdge({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
+#print(newGraph)
+#newGraph.add_vertex("z")
+#print(newGraph)
+#newGraph.add_edge(("b", "z"))
+#print(newGraph)
 #newGraph.add_edge(("z", "y")) #errors out on purpose
-newGraph.remove_edge(("a", "b"))
-print(newGraph)
-newGraph.remove_vertex("b")
+#newGraph.remove_edge(("a", "b"))
+# print(newGraph)
+#newGraph.remove_vertex("b")
 # newGraph.remove_vertex("p") # key not in set
-print(newGraph)
+# print(newGraph)

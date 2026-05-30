@@ -39,22 +39,68 @@ def test_SimpleGraph_duplicate_detection():
         G = SimpleGraph({"a", "b", "c", "d"}, [("a", "b"), ("a", "b")])
 
 
-def test_DFS_lecture():
-    """
-    test the dfs
-    """
+def test_add_edge():
+   """
+   Does edge addition actually work after overriding?
+   """
+   G = SimpleGraph({"a", "b", "c"}, [("a", "b"),])
+   G.add_edge(("a", "c"))
+   assert G.adjList == {'a': ['b', 'c'], 'b': ['a'], 'c': ['a']}
 
-    G = SimpleGraph({"a", "b", "c", "d", "e", "f",
-                   "g", "h", "i", "j", "k", "l"},
-                   [("a", "b"), ("a", "e"), ("e", "i"),("e", "j"), ("i", "j"), 
-                   ("c", "d"), ("c", "h"), ("c", "g"), ("g", "h"), ("d", "h"),
-                   ("g", "k"), ("h", "k"), ("h", "l")])
 
-    test = G.DFS()
-    #print(test)
-    assert(test) == {'a': ['b', 'e'], 'b': [], 'c': ['d'], 'd': ['h'], 'e': ['i'], 
-                     'f': [], 'g': ['k'], 'h': ['g', 'l'], 'i': ['j'], 'j': [], 
-                     'k': [], 'l': []}
-    #raise ValueError("aaaahhh")
-# TODO: Loop test in add edge
-# TODO: Duplicate test in add_edge
+def test_add_edge_empty_graph():
+    """
+    Does edge addition actually work after overriding?
+    """
+    G = SimpleGraph({"a", "b"}, [])
+    G.add_edge(("a", "b"))
+    assert G.adjList == {'a': ['b'], 'b': ['a']}
+
+
+def test_add_duplicate_edge():
+   """
+   Edge addition should also validate if a duplicate edge exists.
+   """
+   G = SimpleGraph({"a", "b", "c"}, [("a", "b"),("a", "c")])
+   with pytest.raises(ValueError):
+       G.add_edge(("a", "c")) # here pycharm autocomplete was disabled
+       # Rest in Piss 2026
+       # "Tried to triplicate my edges! What an asshat!"
+
+
+def test_add_loop_edge():
+   """
+   ... or if the edge loops back to the same vertex...
+   """
+   G = SimpleGraph({"a", "b", "c"}, [("a", "b"),("a", "c")])
+   with pytest.raises(ValueError):
+       G.add_edge(("a", "a"))
+
+
+def test_add_nonexistent_vertex():
+   """
+   ... or if the vertex DNE in graph.
+   """
+   G = SimpleGraph({"a", "b", "c"}, [("a", "b"),("a", "c")])
+   with pytest.raises(KeyError):
+       G.add_edge(("a", "d"))
+
+
+def test_tuples_as_ints():
+   """
+   Test whether int edge tuples like (1,4) are accepted and converted to ("1", "4")
+   """
+
+   raise NotImplementedError("TODO")
+
+
+
+def test_shorter_notation():
+   """
+   For a SimpleGraph, it should be sufficient to supply an edge list.
+   The set should be optional in case the user would like a subgraph.
+   The set should absolutely be required if the user
+   """
+   raise NotImplementedError("TODO")
+
+
