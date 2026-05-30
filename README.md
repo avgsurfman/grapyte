@@ -22,7 +22,7 @@ Features:
 - Native UTF-8 Support.
 - And much more!
 
-Also there is a Latex document is you are interested in the spec, I guess...
+Also there is a LaTeX document if you are interested in the spec, I guess...
 
 
 
