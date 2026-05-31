@@ -16,27 +16,30 @@ class GraphAdj:
     CC Franciszek Moszczuk
     """
 
-    
-    def __init__(self, vertex: set = None, edges: list = None, name = "Unnamed", directed = True, 
+
+    def __init__(self, vertex: set = None, edges: list[str, str] = None,
+                 name: str = "Unnamed", directed: bool = True,
                  array = None, vti = None, itv = None):
         """
         Uses tuples by default because the graph isn't the same after it's modified,
         therefore it makes sense to make edges a list of tuples
+        Unlike in the (Simple)Graph, we do not allow the use of ints as
+        some shit like (5, 6) has no relation to neither index 5 nor 6 of
+        a numpy array.
 
         WAYS OF ENTRY:
         1) Edge list constructor
-        2) "Back entry" through the factory method (fromGraph, from_graph6)
+        2) "Back entry" through the factory method (fromGraph, from_graph6,
+        from_dimacs)
         
-        1)
-        1. Sort the set (remains of the edge list graph) 
+        1) Edge list constructor (default)
+        1. Sort the set (remains of the edge list graph)
         2. Append numbers to vertex 
         # {a, c, 1, c, ...} --> {0: a, 1: c, } etc 
-        TODO: BENCHMARK THIS
         # IndexToVertex === ITV
         # VertexToIndex === VTI
-        3. Create matrix
-       
-        
+        3. Create a numpy matrix
+
         """
         # set basic params
         # TODO: Make this private.
@@ -44,10 +47,9 @@ class GraphAdj:
         self.name = name
         
         if array is None:
-            # sort set
-            # Assumes strings.
             templist = sorted(vertex)
-             
+
+            # twin-linked dicts
             # technically those two should be linked somehow but they arent
             # THIS SHOULD BE A SEPARATE CLASS!!! CAN AND WILL GET DESYNCED
             self.IndexToVertex = {}
@@ -695,81 +697,3 @@ class GraphAdj:
     #        raise ValueError("Invalid n value")
 
 
-"""
- (The) Finest selection of tests 
- Usage examples
-"""
-
-# Directed tests
-
-#newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
-#print(newGraph)
-#
-#newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
-#print(newGraph)
-#
-## should error out
-#newGraph = GraphAdj({'a', 'b', 'c'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example")        
-#print(newGraph)
-#
-#newGraph.add_vertex("z")
-#print(newGraph)
-#
-#newGraph.add_edge(("b", "z"))
-#print(newGraph)
-
-# Undirected tests
-
-#newGraph = GraphAdj({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example", directed=False)        
-#print(newGraph)
-#newGraph = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'b'), ('a', 'c'), ('a', 'd')], name = "Example", directed=False)        
-#print(newGraph)
-#
-#newGraph.add_vertex("z")
-#print(newGraph)
-#
-#newGraph.add_edge(("b", "z"))
-#print(newGraph)
-#
-#newGraph.remove_edge(("a", "b"))
-#print(newGraph)
-#
-#newGraph.remove_vertex("b")
-#print(newGraph)
-
-# At this point I should be using pytest...
-# lecture example
-
-#M = GraphAdj({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Lecture", directed=False)        
-#print(M)
-#assert M.count_nWalks(('a', 'c'), 2) == 2, "Should be 2"
-#assert M.count_nWalks(('a', 'c'), 3) == 5, "Should be 5"
-#print(f"M 3-Cycles: {M.count_3Cycles()}")
-
-
-# List test
-#List = Graph({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Conversion test")
-#print(List)
-#print(List.to_GraphAdj())
-
-
-# Error testing
-#newGraph.add_edge(("z", "y")) #errors out on purpose
-#newGraph.remove_edge(("a", "b"))
-#print(newGraph)
-#newGraph.remove_vertex("b")
-# newGraph.remove_vertex("p") # key not in set
-# print(newGraph)
-
-
-# TODO: move tests 
-# GRAPH6 TEST
-#graph6 = GraphAdj.from_graph6("DQc")
-#diff = GraphAdj.from_graph6("G}l~~{")
-#print(diff)
-
-# DIGRAPH6 Test
-
-#digraph6 = GraphAdj.from_digraph6("&DI?AO?")
-#print(digraph6)
-# required dep

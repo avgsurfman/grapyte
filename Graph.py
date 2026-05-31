@@ -9,7 +9,10 @@ class Graph:
     """
 
     
-    def __init__(self, vertex: set, edges: list = [], name = "Unnamed", directed = True, adjList = None):
+    def __init__(self,
+                 vertex: set | list,
+                 edges: list[tuple[str,str]] | list[tuple[int, int]] = [],
+                 name = "Unnamed", directed = True, adjList = None):
         """
         Uses tuples by default because the graph isn't the same after it's modified,
         therefore it makes sense to make edges a list of tuples
@@ -17,10 +20,16 @@ class Graph:
         # TODO: make this private
         self.directed = directed
         self.name = name
-        # set S
-        templist = sorted(vertex)
-        self.vertex = vertex
-         
+
+        # validate set S
+        templist = []
+        for item in vertex:
+            if type(item) is not str:
+                templist.append(str(item))
+            else:
+                templist.append(item)
+        self.vertex = set(templist)
+
         # self.adjList: 
         # f(X): dict<str> -> list<str>
         # honestly this would be much better in TypeScript
@@ -29,6 +38,11 @@ class Graph:
             for i in range(len(templist)):
                 self.adjList[templist[i]] = []
             for u, v in edges:
+                if type(u) is not str:
+                    u = str(u)
+                if type(v) is not str:
+                    v = str(v)
+                # easily subgraph a graph
                 if u not in self.vertex or v not in self.vertex:
                    print(f"{u} or {v} not in set, skipping...")
                 else:
@@ -47,19 +61,20 @@ class Graph:
 {self.vertex}, Adjacency list: {self.adjList}"
 
 
-    def add_vertex(self, vertex: str):
+    def add_vertex(self, vertex: str | int):
         """
         Adds a vertex to the graph. Assumed a UTF-8 character (Python default)
         """
-        # make sure it's really a string? 
         if vertex not in self.vertex:
-           self.adjList[vertex] = []
-           self.vertex.add(vertex)
+            if type(vertex) is not str:
+                vertex = str(vertex)
+            self.adjList[vertex] = []
+            self.vertex.add(vertex)
         else:
            print(f"Vertex {vertex} already in graph!")
               
 
-    def remove_vertex(self, vertex: str):
+    def remove_vertex(self, vertex: str | int):
         """
         Deletes a vertex. Deletes all edges O(V) for undirected and O(V²)
         for indirected graphs.
@@ -103,13 +118,17 @@ class Graph:
         self.vertex.remove(vertex)
 
 
-    def add_edge(self, edge: tuple):
+    def add_edge(self, edge: tuple[str, str] | tuple[int, int]):
         """
         Adds an edge. Checks whether there are vertexes in a graph, then inserts an additional edge.
         """
         # Check whether this is a tuple
         if type(edge) is tuple:
             a, b = edge
+            if type(a) is not str:
+                a = str(a)
+            if type(b) is not str:
+                b = str(b)
             if a not in self.vertex or b not in self.vertex:
                 raise KeyError(f"{a} or {b} not in the list of verticies")
             self.adjList[a].append(b)
@@ -120,14 +139,31 @@ class Graph:
            raise TypeError(f"Bad Type: {edge} is", type(edge))
 
 
-    def remove_edge(self, edge: tuple):
+    def remove_edge(self, edge: tuple[str, str] | tuple[int, int]):
         """
         Removes an edge. Throws an error if there is no such edge.
         """
         a, b = edge
-        self.adjList[a].remove(b)
-        if not self.directed:
-            self.adjList[b].remove(a)
+        if type(a) is not str:
+            a = str(a)
+        if type(b) is not str:
+            b = str(b)
+        try:
+            self.adjList[a].remove(b)
+        except KeyError:
+            raise KeyError(f"The vertex {a} or {b} you are refering to is not"
+                           f"in the adjacency list.")
+        except ValueError:
+            raise KeyError(f"No such edge! {edge}") from None
+        try:
+            if not self.directed:
+                self.adjList[b].remove(a)
+        except ValueError:
+            raise Error(
+                f"If you are reading this, "
+                f"chances are you corrupted your Adjacency List.\n"
+                f"Good luck.\nEdge: {edge}\nList: {self.adjList}") from None
+
 
 
     def to_GraphAdj(self):
@@ -178,18 +214,4 @@ class Graph:
      
 
 
-
-# directed
-#newGraph = Graph({'a', 'b'}, [('a', 'b',), ('a', 'b')], name = "Example")        
-#print(newGraph)
-#newGraph.add_vertex("z")
-#print(newGraph)
-#newGraph.add_edge(("b", "z"))
-#print(newGraph)
-#newGraph.add_edge(("z", "y")) #errors out on purpose
-#newGraph.remove_edge(("a", "b"))
-#print(newGraph)
-#newGraph.remove_vertex("b")
-# newGraph.remove_vertex("p") # key not in set
-#print(newGraph)
 

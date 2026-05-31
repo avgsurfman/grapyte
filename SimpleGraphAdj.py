@@ -77,7 +77,7 @@ class SimpleGraphAdj(GraphAdj):
     def add_edge(self, edge: tuple[str, str]):
         """
         Adds an edge. Checks whether the edge is valid, then inserts.
-        Does not allow duplicate edges.
+        Does not allow duplicate edges nor self-loops.
         """
         # Check whether this is a tuple
         if type(edge) is tuple:
@@ -89,6 +89,8 @@ class SimpleGraphAdj(GraphAdj):
            c, d = self.VertexToIndex[a], self.VertexToIndex[b]
            if self.adjMatrix[c, d] >= 1:
               raise ValueError(f"Duplicate edge: {c, d} or {d, c}")
+           if c == d:
+              raise ValueError(f"Loop: {edge}")
            else:
               #if not self.directed:
               self.adjMatrix[c, d] += 1

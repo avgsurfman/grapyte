@@ -10,21 +10,34 @@ class SimpleGraph(Graph):
     Should be called a SG (akin to Directed Acyclic Graph).
     """
     
-    def __init__(self, vertex: set, edges: list = [], name = "Unnamed", adjList = None):
+    def __init__(self,
+                 vertex: set | list,
+                 edges: list[tuple[str,str]] | list[tuple[int, int]] = [],
+                 name = "Unnamed", adjList = None):
         
         self.directed = False
         self.name = name
-        # set S
-        templist = sorted(vertex)
-        self.vertex = vertex
-         
-        # self.adjList: 
+
+        # validate set S
+        templist = []
+        for item in vertex:
+            if type(item) is not str:
+                templist.append(str(item))
+            else:
+                templist.append(item)
+        self.vertex = set(templist)
+
+        # self.adjList:
         # f(X): dict<str> -> list<str>
         if not adjList:
             self.adjList = {}
             for i in range(len(templist)):
                 self.adjList[templist[i]] = []
             for u, v in edges:
+                if type(u) is not str:
+                    u = str(u)
+                if type(v) is not str:
+                    v = str(v)
                 if u not in self.vertex or v not in self.vertex:
                    print(f"{u} or {v} not in set, skipping...")
                 elif v in self.adjList[u] or u in self.adjList[v]:
@@ -35,7 +48,6 @@ class SimpleGraph(Graph):
                    raise ValueError(f"Loops not allowed: {u, v}.")
                 else:
                    self.adjList[u].append(v)
-                   #if not self.directed:
                    self.adjList[v].append(u)
         else:
            # YOLO no type checking
@@ -43,10 +55,8 @@ class SimpleGraph(Graph):
         
         print(self.adjList)
 
-    # TODO: Override older functions to guard against self-loops
 
-
-    def add_edge(self, edge: tuple):
+    def add_edge(self, edge: tuple[str, str] | tuple[int, int]):
         """
         Adds an edge. Checks whether there are vertexes in a graph, then inserts an additional edge.
         This also prevents duplicate edges.
@@ -61,13 +71,18 @@ class SimpleGraph(Graph):
             elif a == b:
                 raise ValueError(f"Loops not allowed: {edge}.")
             else:
+                # this can fail,but again, it's not my problem
+                if type(a) is not str:
+                    a = str(a)
+                if type(b) is not str:
+                    b = str(b)
                 self.adjList[a].append(b)
                 if not self.directed:
                     self.adjList[b].append(a)
         else:
            raise TypeError(f"Bad Type: {edge} is", edge)
 
-
+    # TODO: depth param
     def DFS(self):
         """
         Depth-first search. Returns the Search Tree as a new adjacency list.
@@ -96,7 +111,7 @@ class SimpleGraph(Graph):
         #
         # this should return a Tree (or a DAG) type in the future
         visited = {vertex:False for vertex in sorted(self.vertex)}
-        T = {vertex:[] for vertex in sorted(self.vertex)}        
+        T = {vertex:[] for vertex in sorted(self.vertex)}
         print(visited)  
         for vertex, flag in visited.items():
             print(f"Current vertex: {vertex}")
@@ -141,6 +156,3 @@ class SimpleGraph(Graph):
          
         #raise NotImplementedError("Not implemented yet")
         return T
-
-
-

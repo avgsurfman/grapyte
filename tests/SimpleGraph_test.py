@@ -90,16 +90,15 @@ def test_tuples_as_ints():
    """
    Test whether int edge tuples like (1,4) are accepted and converted to ("1", "4")
    """
-
-   raise NotImplementedError("TODO")
-
+   G = SimpleGraph({1, 2, 3}, [(1, 2),(2, 3)])
+   assert G.adjList == {"1": ["2"], "2": ["1", "3"], "3": ["2"]}
 
 
 def test_shorter_notation():
    """
    For a SimpleGraph, it should be sufficient to supply an edge list.
    The set should be optional in case the user would like a subgraph.
-   The set should absolutely be required if the user
+   The set should absolutely be required if the user supplies an edge-less graph.
    """
    raise NotImplementedError("TODO")
 
