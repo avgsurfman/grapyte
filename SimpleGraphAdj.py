@@ -27,7 +27,6 @@ class SimpleGraphAdj(GraphAdj):
                  array = None, vti = None, itv = None, 
                  directed: bool = False):
 
-        # TODO: improve type hints
         # directed has to be featured because SGA inherits the cls method
         # which also means it should be overridden and
         # I am not rewriting that fucking class method 
@@ -219,7 +218,7 @@ class SimpleGraphAdj(GraphAdj):
     """
 
     @classmethod 
-    def from_dimacs(cls, data: str = None, path="") -> np.ndarray:
+    def from_dimacs(cls, data: str = None, path: str = "") -> np.ndarray:
         """
         Reads the DIMACS graph format.
         Reads from path file first if present.
@@ -339,7 +338,7 @@ class SimpleGraphAdj(GraphAdj):
     Coloring
     """    
  
-    def color_greedy(self, init_list = None, return_coloring: bool = False) -> int:
+    def color_greedy(self, init_list = None, return_coloring: bool = False) -> int | tuple[int, dict]:
         """
         Returns approximation of the chromatic number using the greedy algorithm.
         Also known as Random Sequential.
@@ -405,7 +404,6 @@ class SimpleGraphAdj(GraphAdj):
         Experimental Greedy variation, backtraces one layer back to color
         the vertex.
         """
-        # TODO: Fix this unfixable fucking dogshit JESUS CHRIST
  
         coloring = dict()
         bucket = list(self.IndexToVertex)
@@ -471,7 +469,7 @@ class SimpleGraphAdj(GraphAdj):
         return c + 1
 
 
-    def color_LF(self, return_coloring: bool = False) -> int:
+    def color_LF(self, return_coloring: bool = False) -> int | tuple[int, dict]:
         """
         Returns the Largest-first coloring approximation of the chromatic number.
         Essentially greedy but with some ordering based on degrees.
@@ -494,7 +492,7 @@ class SimpleGraphAdj(GraphAdj):
     color_WP = color_LF
          
 
-    def color_SL(self, return_coloring: bool = False) -> int:
+    def color_SL(self, return_coloring: bool = False) -> int | tuple[int, dict]:
         """
         Returns the Smallest Last coloring approximation of the chromatic number.
         This, surprisingly, is also greedy. 

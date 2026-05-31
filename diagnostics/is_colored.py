@@ -16,5 +16,8 @@ def is_colored(coloring: dict, adjMatrix, ITV: dict) -> bool:
             adjacent_color = coloring[neighbor_vertex]
             if adjacent_color == color:
                print(f"Improper coloring! {vertex}, {coloring}, adjacent: {neighbor_vertex}")
-         
-    return True 
+               return False
+    if False in is_colored.values():
+        return False
+    else:
+        return True
