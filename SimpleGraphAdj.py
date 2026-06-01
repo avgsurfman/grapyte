@@ -248,22 +248,23 @@ class SimpleGraphAdj(GraphAdj):
             Some preface is needed for this section:
             1) Single letters (tokens) denote detectors.
             2) This is a Mealy FSM, meaning the state and the inputs affect
-            the state.
-            3) This is a minimal DIMACS 2nd ed parse. x parameter description 
+            the output of the FSM.
+            3) This is a minimal DIMACS 2nd ed parser. x parameter description 
             and v params are not supported, as I don't know how to draw graphs in GUI.
             This also isn't 1st ed, 3rd ed or any other ed as the multigraph 
-            class doesn't support weighted edges, or nodes (n ID param).
+            class doesn't support weighted edges, or nodes description (n ID param).
  
             Grammar for each regex:
             - comment line is accepting the words: *c*. In other words,
             comments can appear anywhere in the file.
             - problem line is accepting words: !entered_problem & problem_line
             - edge line is accepting words: p & edge_line OR e & edge_line
-            - Every other sequence gets an error
+            - Every other sequence ends up in an error state, which raises 
+            an exception.
             
             # finish on file end on edge line or comment; 
             # if not in acceptor state, throw 
-            # if the edges perl re capture doesn't match, also throw
+            # if the comment/problem/edges perl re capture doesn't match, also throw
             """
             comment_detector = re.compile("^c( |$)")
             problem_detector = re.compile("^p edge (?P<n>[0-9]+) (?P<edges>[0-9]+)")
