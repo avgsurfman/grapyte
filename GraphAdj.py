@@ -249,7 +249,7 @@ class GraphAdj:
             pos = self.VertexToIndex[vertex]
             return self.adjMatrix[pos].sum() + self.adjMatrix[pos, pos] 
         elif isinstance(vertex, int):
-            return self.adjMatrix[vertex].sum()
+            return self.adjMatrix[vertex].sum() + self.adjMatrix[vertex, vertex]
         else:
             raise TypeError(f"get_deg requires an int | str, not {type(vertex)}") 
     

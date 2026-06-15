@@ -50,7 +50,6 @@ class SimpleGraph(Graph):
                    self.adjList[u].append(v)
                    self.adjList[v].append(u)
         else:
-           # YOLO no type checking
            self.adjList = adjList  
         
         print(self.adjList)
@@ -82,12 +81,12 @@ class SimpleGraph(Graph):
         else:
            raise TypeError(f"Bad Type: {edge} is", edge)
 
-    # TODO: depth param
-    def DFS(self):
+
+    def DFS(self, depth: int = -1, order: str = "order", disp_ascii=False):
         """
         Depth-first search. Returns the Search Tree as a new adjacency list.
         """
-        def search_dfs(v):
+        def search_dfs(v : str):
             print(f"search dfs {v}")
             # PREVISIT ENDS HERE
             visited[v] = True
@@ -101,6 +100,20 @@ class SimpleGraph(Graph):
         
             # POSTVISIT ENDS HERE
 
+
+        def search_dfs_depth(v : str, d: int):
+            print(f"search dfs {v}")
+            # PREVISIT ENDS HERE
+            visited[v] = True
+            # iterating over a list here.
+            for neighbor in self.adjList[v]:
+                if (visited[neighbor] is False) and d <= depth:
+                    print(f"{v} -> {neighbor}")
+                    T[v].append(neighbor)
+                    search_dfs(neighbor, d+1)
+
+            # POSTVISIT ENDS HERE
+        
         # visited<vertex> -> bool
         
         # the sets have to be resorted because there is some fuckery 
@@ -115,12 +128,54 @@ class SimpleGraph(Graph):
         print(visited)  
         for vertex, flag in visited.items():
             print(f"Current vertex: {vertex}")
+            # find first unvisited root node
             if not visited[vertex]: 
-               # find first unvisited root node
-               search_dfs(vertex)
-         
+               if depth > -1:
+                  search_dfs_depth(vertex, depth)
+               else:
+                  search_dfs(vertex)
         return T
           
+
+    def DFS_iter(self):
+        """
+        Iterative version of the DFS algorithm.
+        """
+
+        def search_dfs(v : str):
+            print(f"Search dfs iter: {v}")
+            # N_0 invariant: every base search vertex is marked as 
+            # visited
+            stack = [v]
+            visited[v] = True
+            
+            # LIFO would alleviate the difference in order but so it stays
+            while stack:
+                # N_n: For each N vertex, put each on stack and pop
+                # and mark as visited
+                print(f"Current stack: {stack}")
+                vertex = stack.pop()
+                print(f"Current vertex: {vertex}")
+                for neighbor in self.adjList[vertex]:
+                    # N_n+1 for each unvisited neighbor v,
+                    # mark visited, add to search stack,
+                    # add to search tree
+                    if not visited[neighbor]:
+                        visited[neighbor] = True
+                        T[vertex].append(neighbor)
+                        stack.append(neighbor)
+                    
+
+        visited = {vertex:False for vertex in sorted(self.vertex)}
+        T = {vertex:[] for vertex in sorted(self.vertex)}
+        print(f"{visited, T}")  
+        for vertex, flag in visited.items():
+            print(f"Search tree exhausted, new vertex: {vertex}:{flag}")
+            if not visited[vertex]: 
+               search_dfs(vertex)
+
+        return T 
+
 
     def BFS(self):
         """
@@ -147,12 +202,142 @@ class SimpleGraph(Graph):
         visited = {vertex:False for vertex in sorted(self.vertex)}
         T = {vertex:[] for vertex in sorted(self.vertex)}        
          
-        print(visited)  
+        # print(visited)  
         for vertex, flag in visited.items():
             #print(f"Current vertex: {vertex}")
             if not visited[vertex]: 
                # find first unvisited root node
                search_bfs(vertex)
          
-        #raise NotImplementedError("Not implemented yet")
         return T
+
+
+    #def isTree(self):
+    #    """
+    #    Is the graph a tree?
+    #    Two criteria
+    #    NOT a forest -> No 0000 columns
+    #    \_> no vertex is disjoint from graph
+    #    |V| = E
+    #    orrrr via DFS (somehow)
+    #    """
+    #    if 
+
+    def get_cycles_st(self):
+        """
+        Get cycles from vertex with DFS w/ that st paths paper.
+        """
+        return NotImplemented 
+
+    def get_simple_cycles(self):
+        """
+        Get simple cycles using the Paton's algorithm.
+        """
+        return
+
+    """
+    https://stackoverflow.com/questions/20556802/determining-whether-or-not-a-directed-or-undirected-graph-is-a-tree
+    
+    This is also based on a lemma from Cormen et al. ItA.
+    - A (directed) graph is acyclic if and only if DFS yield no backedges. (20.11 p.573)
+    - Undirected Graphs have only tree edges and back edges. (20.10 p. 570)
+    """
+   
+    def __search_dfs_cycles(self, v: str, parent: str, visited: dict[str,bool]) -> bool:
+        """
+        Private (protected) method for checking acylicity.
+        """ 
+        # From each vertex, we search edge and mark visited vertices
+        # if we encounter the same vertex from an unvisited edge,
+        # we have a cycle.
+                  
+        visited[v] = True
+        for neighbor in self.adjList[v]:
+            if not visited[neighbor]:
+                print(f"{v} -> {neighbor}")
+                # bubble up the result negative result
+                if not self.__search_dfs_cycles(neighbor, v, visited):
+                    return False
+            elif neighbor != parent: 
+                print(f"Cycle discovered! {neighbor, parent}")
+                return False
+            else:
+                print(f"Back edge: {neighbor, parent}")
+                continue
+
+        return True                    
+
+
+    def is_acyclic(self):
+        """
+        Does the graph contain a cycle?
+        Based on modified DFS.
+        """
+        visited = {vertex:False for vertex in sorted(self.vertex)}
+
+        # unlike in is_tree we traverse the whole graph
+        # even if its disjoint
+        for vertex, flag in visited.items():
+            print(f"Search tree exhausted, new vertex: {vertex}:{flag}")
+            if not visited[vertex]: 
+               if not self.__search_dfs_cycles(vertex, vertex, visited):
+                   return False
+        return True
+        
+
+
+    def is_tree_dfs(self):
+        """
+        Technically a faster way to do it in O(v) would to check for empty
+        vertices and to check the count of edges (n-1).
+        However, lists aren't that fast (as numpy matrices are).
+        Alternative solution would be to simply
+        sum = 0
+        for v in adjList:
+            if not v:
+                return False
+            sum += len(adjList[v])
+        if (edges - 1) == len(vertex):
+            return True
+        return False 
+        Based on modified DFS.
+        """
+        # cycle has different edges and verticies
+        #def search_dfs(v : str) -> bool:
+        #    print(f"Search dfs for cyles: {v}")
+        #    # From each vertex, we search edge and mark visited vertices
+        #    # if we encounter the same vertex from an unvisited edge,
+        #    # we have a cycle.
+        #              
+        #    visited[v] = True
+        #    for neighbor in self.adjList[v]:
+        #        # preconstruct an edge
+        #        current_edge = (v, neighbor)
+        #        reverse_edge = (neighbor, v)
+        #        if visited[neighbor] is False:
+        #            print(f"{v} -> {neighbor}")
+        #            edges.append(current_edge)
+        #            print(f"{edges}")
+        #            # bubble up the result negative result
+        #            if not search_dfs(neighbor):
+        #                return False
+        #        elif (current_edge not in edges) and (reverse_edge not in edges):
+        #            print(f"Cycle discovered! {current_edge} not in {edges}")
+        #            return False
+        #        else:
+        #            print(f"Edge already discovered: {current_edge}")
+        #            continue
+
+        #    return True                    
+
+
+        visited = {vertex:False for vertex in sorted(self.vertex)}
+        # edges = []
+
+        # pick any vertex, here we pick first
+        vertex = next(iter(visited))
+        if not self.__search_dfs_cycles(vertex, vertex, visited):
+            return False
+        
+        # after traversal, make sure every edge was discovered
+        return all(visited.values()) 

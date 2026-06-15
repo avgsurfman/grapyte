@@ -87,8 +87,8 @@ print(f"M 3-Cycles: {M.count_3Cycles()}")
 ## Graph --> GraphAdj conversion (List to Matrix)
 ```
 List = Graph({'a', 'b', 'c', 'd'}, [('a', 'b',), ('a', 'c'), ('a', 'd'), ('b', 'c'), ('c', 'd')], name = "Conversion test")
-print(List)
-print(List.to_GraphAdj())
+List.to_GraphAdj()
+List.to_GraphAdj()
 ```
 
 ## Error testing

@@ -545,20 +545,21 @@ class SimpleGraphAdj(GraphAdj):
     color_DSTATUR = color_SLF
    
     
-    """
-    AAAAAAH Search Algorithms.
-    TODO: Implement for both adj Matrix and List.
-    """
     # TODO: add params:
-    # depth
-    # d : int = None
-    # preorder, postorder display
+    # preorder, order, postorder display
     # ASCII art
-    def DFS(self):
+    def DFS(self, depth: int = -1, order: str = "order", disp_ascii=False):
         """
-        Depth-first search. Returns the Search Tree as a new List/Matrix
+        Depth-first search. Returns the Search Tree as a new List/Matrix.
+        In C#/Java fashion, this should be an interface, since multiple types of graph
+        can implement DFS (they don't have to inherit it), but because PYTHON IS A CLUSTERFUCK
+        of a language of fucking course, there isn't a single consensus.
+        This is why we can't take Python (or matlab) seriously.
+        https://stackoverflow.com/questions/2124190/how-do-i-implement-interfaces-in-python
+        STOP! BOILING EGG IS A BAD PRACTISE-aaahh post
         """
-        def search_dfs(v):
+
+        def search_dfs(v: int):
             """
             Unlike in DFS for lists, v is the row index of the array, instead of a string.
             """
@@ -573,10 +574,28 @@ class SimpleGraphAdj(GraphAdj):
                     if visited[index] is False:
                         print(f"{v} -> {index}")
                         #T[v].append(index)
-                        M[v, index] = 1 
+                        M[v, index] = 1
                         search_dfs(index)
                 # else do nothing
-        
+
+
+        def search_dfs_depth(v: int, d: int):
+            """
+            int is the depth that is recursively increased.
+            """
+            print(f"search dfs depth: {v, d}")
+            # PRE-VISIT
+            visited[v] = True
+            neighbors = np.nditer(self.adjMatrix[v], flags=['f_index'])
+            for neighbor in neighbors:
+                # if there's an edge at all
+                if neighbor:
+                    index = neighbors.index
+                    if (visited[index] is False) and (d < depth):
+                        print(f"{v} -> {index}")
+                        #T[v].append(index)
+                        M[v, index] = 1
+                        search_dfs(index, d+1)
         # visited<vertex> -> bool
         
         # Thankfully we do not need to sort the ITV dict again like in the case
@@ -594,7 +613,10 @@ class SimpleGraphAdj(GraphAdj):
             print(f"Current vertex: {vertex}")
             if not visited[vertex]: 
                # find first unvisited root node
-               search_dfs(vertex)
+               if depth > -1:
+                   search_dfs_depth(vertex, depth)
+               else:
+                   search_dfs(vertex)
         #print(T)
         print(M) 
         return M
@@ -644,10 +666,10 @@ class SimpleGraphAdj(GraphAdj):
     #    """
     #    Is the graph a tree?
     #    Two criteria
-    #    NOT a forest
-    #    no vertex is disjoint from graph
+    #    NOT a forest -> No 0000 columns
+    #    \_> no vertex is disjoint from graph
     #    |V| = E
-    #    orrrr via DFS
+    #    orrrr via DFS (somehow)
     #    """
     #    if 
 

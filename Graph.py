@@ -1,6 +1,8 @@
 import numpy as np
 import time
 
+#TODO: add degree methods? maybe?
+
 class Graph:
     """
     (Un) Directed Multigraph class. Uses adjacency lists by default.
