@@ -223,17 +223,48 @@ class SimpleGraph(Graph):
     #    """
     #    if 
 
+    def get_cycles(self, vertex: str):
+        """
+        Get cycles for a given vertex. Not optimal.
+        """
+        #            target_vertex current_vertex local_dict               tuple path
+        def dfs_cycles(current: str, parent: str, visited: dict[str, bool], path: tuple[str]):
+            visited[current] = True
+            print(path)
+            print(f"Current vertex: {parent}")
+            print(f"local? visited: {visited}")
+            for neighbor in self.adjList[current]:
+                if not visited[neighbor]:
+                    # shallow copy works here thanks to immutable elements and non-vars
+                    dfs_cycles(neighbor, current, visited.copy(), path + (neighbor,))
+                elif neighbor == parent:
+                    # parent == neighbor => backedge, ignore
+                    continue
+                elif neighbor == vertex:
+                    print(f"neigh {neighbor} par {parent} vertex {vertex}")
+                    # add to cycle list
+                    cycles_list.append(path)
+                
+        visited = {vertex:False for vertex in sorted(self.vertex)}
+        cycles_list = []        
+        dfs_cycles(vertex, vertex, visited, (vertex,)) 
+
+        return cycles_list 
+            
+
     def get_cycles_st(self):
         """
         Get cycles from vertex with DFS w/ that st paths paper.
+
         """
         return NotImplemented 
 
-    def get_simple_cycles(self):
+    def get_cycle_bases(self):
         """
         Get simple cycles using the Paton's algorithm.
         """
-        return
+        return NotImplemented
+
 
     """
     https://stackoverflow.com/questions/20556802/determining-whether-or-not-a-directed-or-undirected-graph-is-a-tree
@@ -263,6 +294,8 @@ class SimpleGraph(Graph):
                 return False
             else:
                 print(f"Back edge: {neighbor, parent}")
+                # loops do count as back edges
+                # see: Cormen et al. ItA
                 continue
 
         return True                    
@@ -341,3 +374,4 @@ class SimpleGraph(Graph):
         
         # after traversal, make sure every edge was discovered
         return all(visited.values()) 
+
