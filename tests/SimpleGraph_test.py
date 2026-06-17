@@ -97,8 +97,8 @@ def test_tuples_as_ints():
 def test_shorter_notation():
    """
    For a SimpleGraph, it should be sufficient to supply an edge list.
-   The set should be optional in case the user would like a subgraph.
-   The set should absolutely be required if the user supplies an edge-less graph.
+   The set should be optional in case the user would like to subgraph a graph.
+   If user supplies an edgeless graph, an empty graph should be created.
    """
    raise NotImplementedError("TODO")
 
