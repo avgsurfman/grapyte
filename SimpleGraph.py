@@ -2,7 +2,7 @@
 
 from collections import deque
 import numpy as np
-from grapyte import Graph
+import grapyte.Graph as Graph
 
 class SimpleGraph(Graph):
     """
@@ -21,7 +21,7 @@ class SimpleGraph(Graph):
         # validate set S
         templist = []
         for item in vertex:
-            if type(item) is not str:
+            if not isinstance(item, str):
                 templist.append(str(item))
             else:
                 templist.append(item)
@@ -33,11 +33,13 @@ class SimpleGraph(Graph):
             self.adjList = {}
             for i in range(len(templist)):
                 self.adjList[templist[i]] = []
+             
             for u, v in edges:
-                if type(u) is not str:
+                if not isinstance(u, str):
                     u = str(u)
-                if type(v) is not str:
+                if not isinstance(v, str):
                     v = str(v)
+
                 if u not in self.vertex or v not in self.vertex:
                    print(f"{u} or {v} not in set, skipping...")
                 elif v in self.adjList[u] or u in self.adjList[v]:
@@ -55,14 +57,24 @@ class SimpleGraph(Graph):
         print(self.adjList)
 
 
+    def __str__(self):
+        return f"Simple Graph {self.name} with the following params:\nVertex:\
+{self.vertex}, Adjacency list: {self.adjList}"
+
+
     def add_edge(self, edge: tuple[str, str] | tuple[int, int]):
         """
         Adds an edge. Checks whether there are vertexes in a graph, then inserts an additional edge.
         This also prevents duplicate edges.
         """
-        # Check whether this is a tuple
+        # Check whether this is a tuple (has to be a tuple)
         if type(edge) is tuple:
             a, b = edge
+            if not isinstance(a, str):
+                a = str(a)
+            if not isinstance(b, str):
+                b = str(b)
+
             if a not in self.vertex or b not in self.vertex:
                 raise KeyError(f"{a} or {b} not in the list of verticies")
             elif b in self.adjList[a]:
@@ -71,10 +83,6 @@ class SimpleGraph(Graph):
                 raise ValueError(f"Loops not allowed: {edge}.")
             else:
                 # this can fail,but again, it's not my problem
-                if type(a) is not str:
-                    a = str(a)
-                if type(b) is not str:
-                    b = str(b)
                 self.adjList[a].append(b)
                 if not self.directed:
                     self.adjList[b].append(a)
@@ -107,10 +115,10 @@ class SimpleGraph(Graph):
             visited[v] = True
             # iterating over a list here.
             for neighbor in self.adjList[v]:
-                if (visited[neighbor] is False) and d <= depth:
-                    print(f"{v} -> {neighbor}")
+                if (visited[neighbor] is False) and (d <= depth):
+                    print(f"{v} -> {neighbor}, d is {d}, depth is {depth}")
                     T[v].append(neighbor)
-                    search_dfs(neighbor, d+1)
+                    search_dfs_depth(neighbor, d+1)
 
             # POSTVISIT ENDS HERE
         
@@ -131,7 +139,7 @@ class SimpleGraph(Graph):
             # find first unvisited root node
             if not visited[vertex]: 
                if depth > -1:
-                  search_dfs_depth(vertex, depth)
+                  search_dfs_depth(vertex, 0)
                else:
                   search_dfs(vertex)
         return T
@@ -184,8 +192,6 @@ class SimpleGraph(Graph):
         def search_bfs(v):
             visited[v] = True
             bfs_queue = deque(v)
-            # print(f"bfs called: {bfs_queue}")
-            # while item in bfs.queue
             # dequeue and iterate over child nodes
             while bfs_queue:
                 #print(f"Current queue: {bfs_queue}")
@@ -212,16 +218,13 @@ class SimpleGraph(Graph):
         return T
 
 
-    #def isTree(self):
-    #    """
-    #    Is the graph a tree?
-    #    Two criteria
-    #    NOT a forest -> No 0000 columns
-    #    \_> no vertex is disjoint from graph
-    #    |V| = E
-    #    orrrr via DFS (somehow)
-    #    """
-    #    if 
+    """
+    Is the graph a tree?
+    Two criteria
+    NOT a forest -> No 0000 columns/empty vertices
+      \_> no vertex is disjoint from graph
+    |V| = E - 1
+    """
 
     def get_cycles(self, vertex: str):
         """

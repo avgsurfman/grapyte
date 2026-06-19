@@ -535,9 +535,10 @@ class SimpleGraphAdj(GraphAdj):
 
         Oops! All Greedy!
         """
-        # while not uncolored: 
-        #     calculate_satur
-        #     choose the smallest vertex with satur
+        # while not uncolored:
+        #     LF ordering, pick highest degree
+        #     calculate_satur for each vertex (adjacent colors)
+        #     choose largest saturation
         #     color with the smallest color available (simple loop from greedy)
         # χ  
         # return c
@@ -552,11 +553,16 @@ class SimpleGraphAdj(GraphAdj):
         """
         Depth-first search. Returns the Search Tree as a new List/Matrix.
         In C#/Java fashion, this should be an interface, since multiple types of graph
-        can implement DFS (they don't have to inherit it), but because PYTHON IS A CLUSTERFUCK
-        of a language of fucking course, there isn't a single consensus.
+        can implement DFS (they don't have to inherit it), and it would be nicer to
+        choose what kind of interfaces a graph class supports, but because 
+        PYTHON IS A CLUSTERFUCK of a language there isn't a single consensus.
         This is why we can't take Python (or matlab) seriously.
         https://stackoverflow.com/questions/2124190/how-do-i-implement-interfaces-in-python
         STOP! BOILING EGG IS A BAD PRACTISE-aaahh post
+
+        NetworkX hacks away with @ macros because of this.
+        I assume the proper method would be to use an Abstract Base Class that yells
+        whenever a method isn't defined, which usually would be a compiler's job.
         """
 
         def search_dfs(v: int):
@@ -595,7 +601,7 @@ class SimpleGraphAdj(GraphAdj):
                         print(f"{v} -> {index}")
                         #T[v].append(index)
                         M[v, index] = 1
-                        search_dfs(index, d+1)
+                        search_dfs_depth(index, d+1)
         # visited<vertex> -> bool
         
         # Thankfully we do not need to sort the ITV dict again like in the case
@@ -635,6 +641,7 @@ class SimpleGraphAdj(GraphAdj):
             while bfs_queue:
                 #print(f"Current queue: {bfs_queue}")
                 vertex = bfs_queue.popleft()
+                # replace with nonzero...
                 neighbors = np.nditer(self.adjMatrix[vertex], flags=['f_index'])
                 for neighbor in neighbors:
                     if neighbor:

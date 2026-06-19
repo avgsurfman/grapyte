@@ -1,11 +1,11 @@
 import numpy as np
 import time
 
-#TODO: add degree methods? maybe?
+from grapyte.utils.GraphError import GraphError
 
 class Graph:
     """
-    (Un) Directed Multigraph class. Uses adjacency lists by default.
+    (Un) Directed Multigraph class. Uses adjacency lists.
      
     CC Franciszek Moszczuk & Karol Madraszek
     """
@@ -16,8 +16,8 @@ class Graph:
                  edges: list[tuple[str,str]] | list[tuple[int, int]] = [],
                  name = "Unnamed", directed = True, adjList = None):
         """
-        Uses tuples by default because the graph isn't the same after it's modified,
-        therefore it makes sense to make edges a list of tuples
+        Uses tuples by default because of their immutability,
+        and also because that was the first implementation.
         """
         # TODO: make this private
         self.directed = directed
@@ -26,7 +26,7 @@ class Graph:
         # validate set S
         templist = []
         for item in vertex:
-            if type(item) is not str:
+            if not isinstance(item, str):
                 templist.append(str(item))
             else:
                 templist.append(item)
@@ -40,9 +40,9 @@ class Graph:
             for i in range(len(templist)):
                 self.adjList[templist[i]] = []
             for u, v in edges:
-                if type(u) is not str:
+                if not isinstance(u, str):
                     u = str(u)
-                if type(v) is not str:
+                if not isinstance(v, str):
                     v = str(v)
                 # easily subgraph a graph
                 if u not in self.vertex or v not in self.vertex:
@@ -55,6 +55,7 @@ class Graph:
            # YOLO no type checking
            self.adjList = adjList  
         
+        # todo: maybe add logging?
         #print(self.adjList)
  
 
@@ -67,9 +68,10 @@ class Graph:
         """
         Adds a vertex to the graph. Assumed a UTF-8 character (Python default)
         """
+        if not isinstance(vertex, str):
+            vertex = str(vertex)
+
         if vertex not in self.vertex:
-            if type(vertex) is not str:
-                vertex = str(vertex)
             self.adjList[vertex] = []
             self.vertex.add(vertex)
         else:
@@ -81,37 +83,42 @@ class Graph:
         Deletes a vertex. Deletes all edges O(V) for undirected and O(V²)
         for indirected graphs.
         """
+        if not isinstance(vertex, str):
+            vertex = str(vertex)
+
         if vertex not in self.vertex:
            raise KeyError("Vertex not in set")
         else:
            if self.directed:
               # unfortunately we have to traverse the entire list to check
-              # for references
-              t1 = time.perf_counter_ns()
-              update_dict = {}
+              # for references O(V*E[V] time)
+              # t1 = time.perf_counter_ns()
+              # update_dict = {}
               for key in self.adjList:
                   # I fucking hate this but it has to stay, I think.
                   # 2 us slower than the original but also 4 faster than reverse iter
                   # Method 1
                   self.adjList[key] = [v for v in self.adjList[key] if v != vertex]
-                  # Method 2 (incorrect)
-                  #neighbors  = self.adjList[key] # pocket reference
-                  #for v in neighbors:
-                  #    if (v == vertex):
-                  #        self.adjList[key].remove(v) 
-                  # Method 3
-                  #for i in range(len(neighbors) -1, -1, -1):
-                  #    if neighbors[i] == vertex:
-                  #        del neighbors[i]
-              t2 = time.perf_counter_ns()
-              print(f"time:", t2 - t1)
+                  """ Previous methods:
+                  #Method 2 ( loud buzzer incorrect)
+                  neighbors  = self.adjList[key] # pocket reference
+                  for v in neighbors:
+                      if (v == vertex):
+                          self.adjList[key].remove(v) 
+                  #Method 3
+                  for i in range(len(neighbors) -1, -1, -1):
+                      if neighbors[i] == vertex:
+                          del neighbors[i]
+                  """
+              # t2 = time.perf_counter_ns()
+              # print(f"time:", t2 - t1)
                       
               del self.adjList[vertex]
            else:
                #loop through all of the edges (u, v) to remove edges from
                # all adjacent vertexes v, then remove the final dict
                # this way we are only iterating over a single list,
-               # keeping this linear (O(V))
+               # keeping this linear, O(E[V])
                for u in self.adjList[vertex]:
                    # reverse lookup
                    self.adjList[u].remove(vertex)
@@ -127,9 +134,9 @@ class Graph:
         # Check whether this is a tuple
         if type(edge) is tuple:
             a, b = edge
-            if type(a) is not str:
+            if not isinstance(a, str):
                 a = str(a)
-            if type(b) is not str:
+            if not isinstance(b, str):
                 b = str(b)
             if a not in self.vertex or b not in self.vertex:
                 raise KeyError(f"{a} or {b} not in the list of verticies")
@@ -146,10 +153,12 @@ class Graph:
         Removes an edge. Throws an error if there is no such edge.
         """
         a, b = edge
-        if type(a) is not str:
-            a = str(a)
-        if type(b) is not str:
-            b = str(b)
+        if type(edge) is tuple:
+            a, b = edge
+            if not isinstance(a, str):
+                a = str(a)
+            if not isinstance(b, str):
+                b = str(b)
         try:
             self.adjList[a].remove(b)
         except KeyError:
@@ -160,11 +169,16 @@ class Graph:
         try:
             if not self.directed:
                 self.adjList[b].remove(a)
-        except ValueError:
-            raise Error(
-                f"If you are reading this, "
-                f"chances are you corrupted your Adjacency List.\n"
-                f"Good luck.\nEdge: {edge}\nList: {self.adjList}") from None
+        except ValueError as err:
+            fail_msg = (f"If you are reading this, "
+                        f"chances are you corrupted your Adjacency List.\n"
+                        f"Good luck.\n"
+                        f"Edges that caused the exception: {edge}\n"
+                        f"Vertex Set: {self.vertex}\n"
+                        f"Adj. List: {self.adjList}\n"
+                        f"Directed: {self.directed}")
+
+            raise GraphError(fail_msg) from err
 
 
 
